@@ -292,7 +292,7 @@ from pathlib import Path
 
 log_path = Path(sys.argv[1])
 repo_root = sys.argv[2]
-for line in deque(log_path.read_text(encoding="utf-8", errors="replace").splitlines(), maxlen=80):
+for line in deque(log_path.read_text(encoding="utf-8", errors="replace").splitlines(), maxlen=500):
     print(line.replace(repo_root, "$REPO"), file=sys.stderr)
 PY
   die 'xctest evidence command failed'

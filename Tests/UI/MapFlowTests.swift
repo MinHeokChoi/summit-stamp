@@ -67,9 +67,9 @@ final class MapFlowTests: XCTestCase {
             "The manual badge must expose the exact visit ID."
         )
 
-        XCTAssertEqual(
-            try pendingMutationCount(from: pendingCount.label),
-            baselinePendingCount + 1
+        assertLabel(
+            "\(baselinePendingCount + 1) pending manual mutations",
+            for: pendingCount
         )
 
         let mapTab = app.tabBars.buttons["Map"]
@@ -88,7 +88,7 @@ final class MapFlowTests: XCTestCase {
             app.staticTexts["map.summary"].waitForExistence(timeout: launchTimeout),
             "Selecting the updated marker must expose its summary."
         )
-        XCTAssertTrue(marker.label.hasSuffix("Visited"))
+        assertLabelEnding("Visited", for: marker)
         assertSelectedSummary(
             in: app,
             visitedStatus: "Visited",
@@ -115,9 +115,9 @@ final class MapFlowTests: XCTestCase {
             handler: nil
         )
         wait(for: [deletedBadgeExpectation], timeout: launchTimeout)
-        XCTAssertEqual(
-            try pendingMutationCount(from: pendingCount.label),
-            baselinePendingCount
+        assertLabel(
+            "\(baselinePendingCount) pending manual mutations",
+            for: pendingCount
         )
 
         mapTab.tap()
@@ -128,7 +128,7 @@ final class MapFlowTests: XCTestCase {
         )
         XCTAssertTrue(marker.waitForExistence(timeout: launchTimeout))
         marker.tap()
-        XCTAssertTrue(marker.label.hasSuffix("Not visited"))
+        assertLabelEnding("Not visited", for: marker)
         XCTAssertTrue(app.staticTexts["map.summary"].waitForExistence(timeout: launchTimeout))
         assertSelectedSummary(
             in: app,
@@ -191,6 +191,15 @@ final class MapFlowTests: XCTestCase {
     private func assertLabel(_ expectedLabel: String, for element: XCUIElement) {
         let labelExpectation = expectation(
             for: NSPredicate(format: "label == %@", expectedLabel),
+            evaluatedWith: element,
+            handler: nil
+        )
+        wait(for: [labelExpectation], timeout: launchTimeout)
+    }
+
+    private func assertLabelEnding(_ suffix: String, for element: XCUIElement) {
+        let labelExpectation = expectation(
+            for: NSPredicate(format: "label ENDSWITH %@", suffix),
             evaluatedWith: element,
             handler: nil
         )

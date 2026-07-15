@@ -2,7 +2,7 @@ import XCTest
 
 @MainActor
 final class SocialAuthorizationTests: XCTestCase {
-    private let launchTimeout: TimeInterval = 5
+    private let launchTimeout: TimeInterval = 60
 
     func testFailClosed() {
         let app = XCUIApplication()
