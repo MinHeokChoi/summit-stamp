@@ -121,7 +121,8 @@ python3 "$script_dir/verify-xctest-manifest.py" \
   --manifest "$manifest_path" \
   --derived-data "$derived_data_path" \
   --source-root "$repo_root" || die 'xctest manifest verification failed'
-python3 - "$manifest_path" "$derived_data_path" "$xctestrun_path" <<'PY' || die 'manifest does not describe the requested xctestrun'
+xctestrun_path="$(
+  python3 - "$manifest_path" "$derived_data_path" "$xctestrun_path" <<'PY'
 import json
 import hashlib
 import os
@@ -161,7 +162,9 @@ try:
             raise ValueError
 except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
     raise SystemExit(1)
+print(expected)
 PY
+)" || die 'manifest does not describe the requested xctestrun'
 
 log_relative=".ci/logs/$id.log"
 log_directory="$repo_root/.ci/logs"
