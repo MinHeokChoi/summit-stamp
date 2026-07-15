@@ -324,10 +324,16 @@ final class TargetGraphTests: XCTestCase {
             )
         }
 
-        XCTAssertTrue(
-            rootView.contains("container.makeMapFeatureView()"),
-            "RootView must render the bundled-catalog map composition."
-        )
+        for requiredComposition in [
+            "MapFeatureView(",
+            "viewModel: container.currentMapViewModel",
+            "revision: container.projectionRevision",
+        ] {
+            XCTAssertTrue(
+                rootView.contains(requiredComposition),
+                "RootView must render the observable bundled-catalog map composition: \(requiredComposition)"
+            )
+        }
 
         for requiredBundleLoad in [
             "Bundle.module.url(forResource: name, withExtension: \"json\")",

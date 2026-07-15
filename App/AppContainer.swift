@@ -554,14 +554,6 @@ final class AppContainer {
             )
         }
     }
-
-    func makeMapFeatureView() -> MapFeatureView {
-        MapFeatureView(
-            viewModelProvider: { self.currentMapViewModel },
-            revision: projectionRevision
-        )
-    }
-
     func makePassportFeatureView() -> PassportFeatureView {
         refreshGPSPermissionFeedback()
         return PassportFeatureView(

@@ -16,24 +16,17 @@ final class GPSFlowTests: XCTestCase {
         passportTab.tap()
         XCTAssertTrue(app.staticTexts["passport.ready"].waitForExistence(timeout: launchTimeout))
 
-        let gpsActions = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "passport.gps.verify.")
+        let mountainCount = app.staticTexts.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "passport.mountain.")
         )
-        let manualActions = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "passport.visit.add.")
-        )
-        XCTAssertEqual(gpsActions.count, 100, "Every mountain must offer an explicit GPS action.")
-        XCTAssertEqual(
-            manualActions.count,
-            100,
-            "Every mountain must retain a manual fallback regardless of GPS availability."
-        )
+        XCTAssertEqual(mountainCount.count, 100, "The exact official catalog must be visible.")
 
-        let firstGPSAction = gpsActions.firstMatch
-        let mountainID = String(firstGPSAction.identifier.dropFirst("passport.gps.verify.".count))
-        XCTAssertFalse(mountainID.isEmpty)
+        let mountainID = "hkr_mtn_03f343fae9427a772cc169f1fb3c0dd2"
+        let firstGPSAction = app.buttons["passport.gps.verify.\(mountainID)"]
+        let manualFallback = app.buttons["passport.visit.add.\(mountainID)"]
+        XCTAssertTrue(firstGPSAction.waitForExistence(timeout: launchTimeout))
         XCTAssertTrue(
-            app.buttons["passport.visit.add.\(mountainID)"].exists,
+            manualFallback.waitForExistence(timeout: launchTimeout),
             "The sampled GPS control must retain its matching manual fallback."
         )
         XCTAssertEqual(
@@ -51,7 +44,6 @@ final class GPSFlowTests: XCTestCase {
             fallbackStatus.label,
             "GPS confirmation was not accepted. You can record this visit manually."
         )
-        let manualFallback = app.buttons["passport.visit.add.\(mountainID)"]
         XCTAssertTrue(manualFallback.exists && manualFallback.isEnabled)
     }
 

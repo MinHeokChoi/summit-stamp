@@ -1,4 +1,5 @@
 import SwiftUI
+import HikerMapFeature
 
 @MainActor
 struct RootView: View {
@@ -17,7 +18,10 @@ struct RootView: View {
 
             TabView(selection: $selectedTab) {
                 NavigationStack {
-                    container.makeMapFeatureView()
+                    MapFeatureView(
+                        viewModel: container.currentMapViewModel,
+                        revision: container.projectionRevision
+                    )
                         .id(container.projectionRevision)
                         .navigationTitle("Map")
                 }
