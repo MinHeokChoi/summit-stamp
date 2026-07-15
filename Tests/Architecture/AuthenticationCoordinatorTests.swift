@@ -455,7 +455,7 @@ final class AuthenticationCoordinatorTests: XCTestCase {
         )
     }
 
-    func testAccountPublicationPolicyBindsOnlyEmptyStateAndRetainsMatchingActor() throws {
+    func testAccountPublicationPolicyBindsEmptyStateRetainsMatchingActorAndAllowsSignedOutLocalState() throws {
         let actor = try XCTUnwrap(UUID(uuidString: "11111111-1111-4111-8111-111111111111"))
 
         XCTAssertEqual(
@@ -474,7 +474,7 @@ final class AuthenticationCoordinatorTests: XCTestCase {
             ),
             actor
         )
-        XCTAssertThrowsError(
+        XCTAssertNil(
             try LocalPassportAccountPublicationPolicy.resolvedActorID(
                 currentActorID: nil,
                 snapshotActorID: nil,

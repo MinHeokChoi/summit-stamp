@@ -1841,9 +1841,6 @@ enum LocalPassportAccountPublicationPolicy {
             }
             return current
         case (.none, .none):
-            guard !hasExistingState else {
-                throw LocalPassportAccountBindingError.unboundExistingState
-            }
             return nil
         }
     }
