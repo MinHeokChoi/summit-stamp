@@ -214,7 +214,19 @@ fi
 rm -f "$temporary_log"
 temporary_log=''
 
-((exit_code == 0)) || die 'xctest evidence command failed'
+if ((exit_code != 0)); then
+  python3 - "$log_file" "$repo_root" <<'PY'
+import sys
+from collections import deque
+from pathlib import Path
+
+log_path = Path(sys.argv[1])
+repo_root = sys.argv[2]
+for line in deque(log_path.read_text(encoding="utf-8", errors="replace").splitlines(), maxlen=80):
+    print(line.replace(repo_root, "$REPO"), file=sys.stderr)
+PY
+  die 'xctest evidence command failed'
+fi
 [[ -d "$result_path" && ! -L "$result_path" ]] || die 'missing xctest result bundle'
 
 counts="$(python3 - "$log_file" <<'PY'
