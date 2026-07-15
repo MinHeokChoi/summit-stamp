@@ -202,7 +202,7 @@ skipped = 0
 warnings = 0
 with open(sys.argv[1], encoding='utf-8', errors='replace') as source:
     for line in source:
-        if re.search(r'(?i)(?:#\s*skip\b|\bskipped\b)', line):
+        if re.search(r'(?i)#\s*skip\b', line):
             skipped += 1
         if re.search(r'(?i)\bwarning\s*:', line):
             warnings += 1

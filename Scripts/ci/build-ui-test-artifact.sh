@@ -96,7 +96,7 @@ workspace_path="$(resolve_repo_path "$workspace" directory)" || die 'invalid wor
 result_path="$(resolve_repo_path "$result" destination)" || die 'invalid result path'
 derived_data_path="$(resolve_repo_path '.ci/xctest/DerivedData' create)" || die 'invalid derived-data path'
 manifest_path="$(resolve_repo_path '.ci/xctest/manifest.json' destination)" || die 'invalid manifest path'
-xctestrun_link_path="$(resolve_repo_path '.ci/xctest/HikerUITests-ios26.5.xctestrun' destination)" || die 'invalid xctestrun output path'
+xctestrun_entrypoint_path="$(resolve_repo_path '.ci/xctest/HikerUITests-ios26.5.xctestrun' destination)" || die 'invalid xctestrun output path'
 output_path="$(resolve_repo_path "$output" destination)" || die 'invalid evidence output'
 project_path="$(resolve_repo_path 'Hiker.xcodeproj' directory)" || die 'missing project path'
 [[ ! -e "$manifest_path.sha256" && ! -L "$manifest_path.sha256" ]] || die 'duplicate manifest output'
@@ -250,7 +250,7 @@ except (OSError, ValueError):
 print(candidates[0])
 PY
 )" || die 'expected exactly one UI-test xctestrun product'
-ln -s "$actual_xctestrun" "$xctestrun_link_path" || die 'unable to create xctestrun producer path'
+cp -p "$actual_xctestrun" "$xctestrun_entrypoint_path" || die 'unable to create xctestrun producer path'
 
 python3 "$script_dir/build-xctest-manifest.py" \
   --derived-data "$derived_data_path" \
