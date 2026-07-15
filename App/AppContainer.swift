@@ -1225,21 +1225,19 @@ final class AppContainer {
             }
             return false
         }
-        guard authenticationCoordinator.state == .signedIn else {
-            actionError = "Sign in before changing your passport."
-            return false
-        }
-        do {
-            localSnapshotActorID = try requireCurrentAccountBinding(
-                snapshotActorID: localSnapshotActorID,
-                hasExistingState: !passportStateMachine.allProjections().isEmpty
-                    || !manualVisitOutbox.nodes.isEmpty
-                    || !planMutationOutbox.isEmpty
-            )
-        } catch {
-            actionError =
-                "This local passport belongs to a different account or predates secure account binding."
-            return false
+        if authenticationCoordinator.state == .signedIn {
+            do {
+                localSnapshotActorID = try requireCurrentAccountBinding(
+                    snapshotActorID: localSnapshotActorID,
+                    hasExistingState: !passportStateMachine.allProjections().isEmpty
+                        || !manualVisitOutbox.nodes.isEmpty
+                        || !planMutationOutbox.isEmpty
+                )
+            } catch {
+                actionError =
+                    "This local passport belongs to a different account or predates secure account binding."
+                return false
+            }
         }
         isPersistingLocalPassport = true
         return true
