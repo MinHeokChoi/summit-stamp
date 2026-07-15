@@ -74,12 +74,19 @@ jobs:
           [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
       - name: Build UI tests and provenance artifact
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id UI-BUILD-PRODUCER
+      - name: Package UI build payload
+        run: >
+          python3 Scripts/ci/pack-xctest-payload.py
+          --source .ci/xctest
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Upload UI build artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ui-build-${{ github.sha }}
           path: |
-            .ci/xctest
+            .ci/xctest-transport/xctest-payload.tar
+            .ci/xctest-transport/xctest-payload.tar.sha256
             .ci/results/ui-build.xcresult
             Evidence/tests/UI-BUILD-PRODUCER.json*
           if-no-files-found: error
@@ -232,6 +239,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run prebuilt map accessibility evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id A11Y-001
       - name: Upload map accessibility evidence
@@ -371,6 +383,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run prebuilt map flow evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id MAP-003
       - name: Upload map flow evidence
@@ -410,6 +427,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run GPS failure fallback evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-004
       - name: Run GPS advisory copy evidence profile
@@ -502,6 +524,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run prebuilt authentication lifecycle evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-002
       - name: Upload authentication lifecycle evidence
@@ -541,6 +568,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run prebuilt partial-history evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id HIST-006
       - name: Upload partial-history evidence
@@ -652,6 +684,11 @@ jobs:
         with:
           name: ui-build-${{ github.sha }}
           path: .
+      - name: Unpack prebuilt UI test payload
+        run: >
+          python3 Scripts/ci/unpack-xctest-payload.py
+          --archive .ci/xctest-transport/xctest-payload.tar
+          --sidecar .ci/xctest-transport/xctest-payload.tar.sha256
       - name: Run fail-closed social UI evidence profile
         run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-009
       - name: Run no-persisted-friend-bytes UI evidence profile
