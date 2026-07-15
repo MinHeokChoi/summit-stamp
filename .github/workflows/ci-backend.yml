@@ -79,7 +79,15 @@ jobs:
           version: 2026.7.6
           sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
           cache: false
-          install_args: supabase postgres pgtap
+          install_args: supabase
+      - name: Install pinned PostgreSQL and pgTAP clients
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            'postgresql-client=16+257build1' \
+            'libtap-parser-sourcehandler-pgtap-perl=3.36-2'
       - name: Start and reset isolated local Supabase
         shell: bash
         env:
@@ -164,7 +172,15 @@ jobs:
           version: 2026.7.6
           sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
           cache: false
-          install_args: supabase postgres pgtap
+          install_args: supabase
+      - name: Install pinned PostgreSQL and pgTAP clients
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            'postgresql-client=16+257build1' \
+            'libtap-parser-sourcehandler-pgtap-perl=3.36-2'
       - name: Start and reset isolated local Supabase
         shell: bash
         env:
@@ -248,7 +264,15 @@ jobs:
           version: 2026.7.6
           sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
           cache: false
-          install_args: supabase postgres pgtap
+          install_args: supabase
+      - name: Install pinned PostgreSQL and pgTAP clients
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            'postgresql-client=16+257build1' \
+            'libtap-parser-sourcehandler-pgtap-perl=3.36-2'
       - name: Start and reset isolated local Supabase
         shell: bash
         env:

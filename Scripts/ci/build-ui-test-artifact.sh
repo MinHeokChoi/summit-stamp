@@ -18,7 +18,7 @@ cd "$repo_root"
 id='UI-BUILD-PRODUCER'
 workspace='Hiker.xcworkspace'
 scheme='HikerUITests'
-destination='platform=iOS Simulator,name=iPhone 17,OS=26.5'
+destination='platform=iOS Simulator,name=iPhone 17,OS=26.5,arch=arm64'
 result='.ci/results/ui-build.xcresult'
 output='Evidence/tests/UI-BUILD-PRODUCER.json'
 while (($#)); do
@@ -118,7 +118,7 @@ PY
 [[ "$workspace" == 'Hiker.xcworkspace' ]] || die 'unsupported UI-test workspace'
 [[ "$result" == '.ci/results/ui-build.xcresult' ]] || die 'unsupported UI-test result path'
 validate_destination "$destination" || die 'invalid destination'
-[[ "$destination" == 'platform=iOS Simulator,name=iPhone 17,OS=26.5' ]] || die 'unsupported UI-test destination'
+[[ "$destination" == 'platform=iOS Simulator,name=iPhone 17,OS=26.5,arch=arm64' ]] || die 'unsupported UI-test destination'
 
 log_relative=".ci/logs/$id.log"
 log_directory="$repo_root/.ci/logs"
