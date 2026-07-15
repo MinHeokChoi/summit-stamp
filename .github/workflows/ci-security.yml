@@ -110,12 +110,16 @@ jobs:
       id-token: write
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
-      HIKER_PROVIDER_GATE_INPUT: ${{ runner.temp }}/hiker-provider-gate.json
     steps:
       - name: Check out source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Configure protected provider gate temporary path
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' "HIKER_PROVIDER_GATE_INPUT=$RUNNER_TEMP/hiker-provider-gate.json" >> "$GITHUB_ENV"
       - name: Select and validate Xcode 26.5 toolchain
         shell: bash
         run: |
@@ -168,11 +172,8 @@ jobs:
       id-token: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
-      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
       HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
       HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
-      HIKER_AUTH_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/auth-preflight-server-source.json
-      HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/auth-preflight-server-source.sig
     steps:
       - name: Check out signed release tag
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -180,6 +181,15 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Configure protected server preflight temporary paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '%s\n' "GNUPGHOME=$RUNNER_TEMP/auth-preflight-gnupg"
+            printf '%s\n' "HIKER_AUTH_PREFLIGHT_SOURCE_PATH=$RUNNER_TEMP/auth-preflight-server-source.json"
+            printf '%s\n' "HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH=$RUNNER_TEMP/auth-preflight-server-source.sig"
+          } >> "$GITHUB_ENV"
       - name: Import protected release tag verification key
         shell: bash
         env:
@@ -270,11 +280,8 @@ jobs:
       id-token: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
-      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
       HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
       HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
-      HIKER_AUTH_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/auth-preflight-archive-source.json
-      HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/auth-preflight-archive-source.sig
     steps:
       - name: Check out signed release tag
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -282,6 +289,15 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Configure protected archive preflight temporary paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '%s\n' "GNUPGHOME=$RUNNER_TEMP/auth-preflight-gnupg"
+            printf '%s\n' "HIKER_AUTH_PREFLIGHT_SOURCE_PATH=$RUNNER_TEMP/auth-preflight-archive-source.json"
+            printf '%s\n' "HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH=$RUNNER_TEMP/auth-preflight-archive-source.sig"
+          } >> "$GITHUB_ENV"
       - name: Import protected release tag verification key
         shell: bash
         env:
@@ -373,7 +389,6 @@ jobs:
       id-token: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
-      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
       HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
       HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
     steps:
@@ -383,6 +398,11 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Configure protected aggregate preflight temporary path
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' "GNUPGHOME=$RUNNER_TEMP/auth-preflight-gnupg" >> "$GITHUB_ENV"
       - name: Import protected release tag verification key
         shell: bash
         env:
@@ -452,14 +472,11 @@ jobs:
       id-token: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
-      GNUPGHOME: ${{ runner.temp }}/pitr-restore-gnupg
       HIKER_PITR_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
       HIKER_PITR_PREFLIGHT_BUILD_DIGEST: ${{ inputs.pitr_restore_build_digest }}
       HIKER_PITR_PREFLIGHT_MIGRATION_SET_SHA256: ${{ vars.HIKER_PITR_PREFLIGHT_MIGRATION_SET_SHA256 }}
       HIKER_PITR_PREFLIGHT_BACKUP_SHA256: ${{ vars.HIKER_PITR_PREFLIGHT_BACKUP_SHA256 }}
       HIKER_PITR_PREFLIGHT_DATASET_SHA256: 1032070f3d7ea12ae68be5859bb1eef353ab815da763f23f8940527b39783cae
-      HIKER_PITR_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/pitr-restore-source.json
-      HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/pitr-restore-source.sig
     steps:
       - name: Check out signed release tag
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -467,6 +484,15 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Configure protected PITR restore temporary paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '%s\n' "GNUPGHOME=$RUNNER_TEMP/pitr-restore-gnupg"
+            printf '%s\n' "HIKER_PITR_PREFLIGHT_SOURCE_PATH=$RUNNER_TEMP/pitr-restore-source.json"
+            printf '%s\n' "HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_PATH=$RUNNER_TEMP/pitr-restore-source.sig"
+          } >> "$GITHUB_ENV"
       - name: Import protected PITR release tag verification key
         shell: bash
         env:

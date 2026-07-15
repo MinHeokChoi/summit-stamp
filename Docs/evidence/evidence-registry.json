@@ -25,6 +25,7 @@
     "OPS-001",
     "OPS-002",
     "EVIDENCE-BIJECTION-NEGATIVE",
+    "AUTH-001",
     "AUTH-002",
     "AUTH-003",
     "AUTH-004",
@@ -234,6 +235,11 @@
       "runner": "bijection-negative",
       "job": "evidence-bijection-negative",
       "output": "Evidence/tests/EVIDENCE-BIJECTION-NEGATIVE.json"
+    },
+    "AUTH-001": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/AUTH-001.json"
     },
     "AUTH-002": {
       "runner": "xcode",
@@ -500,7 +506,7 @@
     },
     "REL-002-GENESIS-NEGATIVE": {
       "runner": "pgtap",
-      "job": "migration",
+      "job": "backend-shards",
       "output": "Evidence/tests/REL-002-GENESIS-NEGATIVE.json"
     },
     "PERF-001": {

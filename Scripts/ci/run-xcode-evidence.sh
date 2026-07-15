@@ -175,9 +175,11 @@ temporary_log=''
 counts="$(python3 - "$log_file" <<'PY'
 import re
 import sys
+import os
 
 skipped = 0
 warnings = 0
+warning_lines = []
 skip_re = re.compile(r"(?i)(?:#\s*skip\b|\bTest Case\b.*\bskipped\b|\btests?\s+skipped\b)")
 warning_re = re.compile(r"(?i)\bwarning\s*:")
 no_appintents_re = re.compile(
@@ -191,6 +193,10 @@ with open(sys.argv[1], encoding="utf-8", errors="replace") as source:
             skipped += 1
         if warning_re.search(line):
             warnings += 1
+            if len(warning_lines) < 20:
+                warning_lines.append(line.rstrip("\n").replace(os.getcwd(), "$REPO"))
+for line in warning_lines:
+    print(f"xcode warning: {line}", file=sys.stderr)
 print(f"{skipped}\t{warnings}")
 PY
 )" || die 'unable to inspect evidence log'

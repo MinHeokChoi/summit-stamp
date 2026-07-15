@@ -287,6 +287,17 @@
       "owner": "Build/Release Engineering",
       "gate": "M0"
     },
+    "AUTH-001": {
+      "runner": "pgtap",
+      "assertion": "Backend/tests/auth/apple_actor_path.sql verifies local Apple claim to actor guard mapping.",
+      "file": "Backend/tests/auth/apple_actor_path.sql",
+      "shard": "auth",
+      "output": "Evidence/tests/AUTH-001.json",
+      "workflow": "ci-backend",
+      "job": "backend-shards",
+      "owner": "Security",
+      "gate": "M2A-M3"
+    },
     "AUTH-002": {
       "runner": "xcode",
       "assertion": "AuthenticationCoordinatorTests.testSessionLifecycle verifies checkpointed sign-in, local session publication, sign-out removal, and return to signed-out state.",
@@ -889,7 +900,7 @@
       "shard": "migration",
       "output": "Evidence/tests/REL-002-GENESIS-NEGATIVE.json",
       "workflow": "ci-backend",
-      "job": "migration",
+      "job": "backend-shards",
       "owner": "Backend",
       "gate": "M6-R"
     },

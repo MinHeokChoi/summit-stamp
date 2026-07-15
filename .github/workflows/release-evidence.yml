@@ -93,7 +93,6 @@ env:
   HIKER_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_RELEASE_TAG_SIGNING_FINGERPRINT }}
   HIKER_RELEASE_RC_MANIFEST_SHA: ${{ vars.HIKER_RELEASE_RC_MANIFEST_SHA }}
   HIKER_RELEASE_M6_EXIT_SHA: ${{ inputs.m6_exit_sha256 }}
-  HIKER_RELEASE_PROTECTED_SOURCE_RECEIPT_PATH: ${{ runner.temp }}/release-protected-source-receipt.json
 
 concurrency:
   group: release-evidence-${{ github.ref }}
@@ -1516,10 +1515,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'internal-alpha' && inputs.confirm_protected_gate
     runs-on: ubuntu-24.04
     environment: staging
-    env: &signed_staging
+    env:
       RELEASE_PROTECTED_ENVIRONMENT: staging
-      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
-      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
       HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -1539,6 +1536,21 @@ jobs:
           THRESHOLD_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64 }}
         run: |
           set -euo pipefail
+          case "$RELEASE_GATE" in
+            threshold-ratification)
+              {
+                printf '%s\n' "HIKER_RELEASE_THRESHOLD_PATH=$RUNNER_TEMP/threshold-ratification.json"
+                printf '%s\n' "HIKER_RELEASE_THRESHOLD_SIGNATURE_PATH=$RUNNER_TEMP/threshold-ratification.sig"
+              } >> "$GITHUB_ENV"
+              ;;
+            *)
+              {
+                printf '%s\n' "HIKER_RELEASE_OBSERVATION_PATH=$RUNNER_TEMP/release-observation.json"
+                printf '%s\n' "HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH=$RUNNER_TEMP/release-observation.sig"
+              } >> "$GITHUB_ENV"
+              ;;
+          esac
+          printf '%s\n' "HIKER_RELEASE_PROTECTED_SOURCE_RECEIPT_PATH=$RUNNER_TEMP/release-protected-source-receipt.json" >> "$GITHUB_ENV"
           python3 - <<'PY'
           import base64
           import hashlib
@@ -1877,7 +1889,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'migration-predeploy' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: &transition_predeploy
+    env:
       RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-predeploy.json
       HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
@@ -1976,8 +1988,17 @@ jobs:
     runs-on: [self-hosted, linux, release-controller]
     environment: production
     env:
-      <<: *transition_predeploy
+      RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-compatibility.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -2031,8 +2052,6 @@ jobs:
     environment: production
     env:
       RELEASE_PROTECTED_ENVIRONMENT: production
-      HIKER_RELEASE_THRESHOLD_PATH: ${{ runner.temp }}/threshold-ratification.json
-      HIKER_RELEASE_THRESHOLD_SIGNATURE_PATH: ${{ runner.temp }}/threshold-ratification.sig
       HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -2058,7 +2077,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'external-beta' && inputs.confirm_protected_gate
     runs-on: ubuntu-24.04
     environment: production
-    env: &beta_floor
+    env:
       RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-beta.json
     steps:
@@ -2087,8 +2106,6 @@ jobs:
     environment: production
     env: &signed_production
       RELEASE_PROTECTED_ENVIRONMENT: production
-      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
-      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
       HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -2115,10 +2132,17 @@ jobs:
     runs-on: [self-hosted, linux, release-controller]
     environment: production
     env:
-      <<: *transition_predeploy
+      RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-pitr.json
-      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
-      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
       HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -2440,11 +2464,18 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-1pct' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: &phase_transition
-      <<: *transition_predeploy
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-activate-1pct.json
-      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
-      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
       HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -2500,8 +2531,18 @@ jobs:
     runs-on: [self-hosted, linux, release-controller]
     environment: production
     env:
-      <<: *phase_transition
+      RELEASE_PROTECTED_ENVIRONMENT: production
       HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-05.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
       HIKER_RELEASE_PHASE_FLOOR_SHA: ${{ vars.HIKER_RELEASE_PHASE_FLOOR_05_SHA }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -2556,7 +2597,20 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-25' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-25.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_25_SHA }}" }
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-25.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+      HIKER_RELEASE_PHASE_FLOOR_SHA: ${{ vars.HIKER_RELEASE_PHASE_FLOOR_25_SHA }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -2609,7 +2663,20 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-50' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-50.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_50_SHA }}" }
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-50.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+      HIKER_RELEASE_PHASE_FLOOR_SHA: ${{ vars.HIKER_RELEASE_PHASE_FLOOR_50_SHA }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -2661,7 +2728,20 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-100' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-100.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_100_SHA }}" }
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-100.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+      HIKER_RELEASE_PHASE_FLOOR_SHA: ${{ vars.HIKER_RELEASE_PHASE_FLOOR_100_SHA }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -2763,7 +2843,19 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'contract-remove-old' && inputs.confirm_protected_gate
     runs-on: [self-hosted, linux, release-controller]
     environment: production
-    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-contract.json }
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-contract.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:

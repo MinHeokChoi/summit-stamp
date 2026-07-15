@@ -66,11 +66,61 @@ jobs:
             evidence_id: MIG-004
           - shard: migration
             evidence_id: MIG-005
+          - shard: migration
+            evidence_id: REL-002-GENESIS-NEGATIVE
     steps:
       - name: Check out source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Set up pinned backend toolchain
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          version: 2026.7.6
+          sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
+          cache: false
+          install_args: supabase postgres pgtap
+      - name: Start and reset isolated local Supabase
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: |
+          set -euo pipefail
+          supabase start
+          supabase db reset --local
+          local_db_url="$(
+            supabase status --output json |
+              python3 -c '
+          import json
+          import sys
+          from urllib.parse import urlsplit
+
+          local_hosts = {"localhost", "127.0.0.1", "::1"}
+          status = json.load(sys.stdin)
+          if not isinstance(status, dict):
+              raise SystemExit(1)
+          values = {
+              value
+              for key in ("DB_URL", "DB URL", "db_url", "database_url", "databaseUrl")
+              if isinstance((value := status.get(key)), str) and value
+          }
+          if len(values) != 1:
+              raise SystemExit(1)
+          database_url = values.pop()
+          parsed = urlsplit(database_url)
+          if (
+              parsed.scheme not in {"postgres", "postgresql"}
+              or parsed.hostname not in local_hosts
+              or not parsed.username
+              or not parsed.password
+              or not parsed.path
+          ):
+              raise SystemExit(1)
+          print(database_url)
+          '
+          )"
+          psql --no-psqlrc --set ON_ERROR_STOP=1 --dbname "$local_db_url" \
+            --command 'CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;'
       - name: Run isolated backend evidence profile
         env:
           BACKEND_SHARD: ${{ matrix.shard }}
@@ -82,6 +132,12 @@ jobs:
           path: Evidence/tests/${{ matrix.evidence_id }}.json*
           if-no-files-found: error
           retention-days: 90
+      - name: Stop local Supabase services
+        if: ${{ always() }}
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: supabase stop
   backend-friend-codes:
     name: backend friend codes
     runs-on: ubuntu-24.04
@@ -102,6 +158,54 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Set up pinned backend toolchain
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          version: 2026.7.6
+          sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
+          cache: false
+          install_args: supabase postgres pgtap
+      - name: Start and reset isolated local Supabase
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: |
+          set -euo pipefail
+          supabase start
+          supabase db reset --local
+          local_db_url="$(
+            supabase status --output json |
+              python3 -c '
+          import json
+          import sys
+          from urllib.parse import urlsplit
+
+          local_hosts = {"localhost", "127.0.0.1", "::1"}
+          status = json.load(sys.stdin)
+          if not isinstance(status, dict):
+              raise SystemExit(1)
+          values = {
+              value
+              for key in ("DB_URL", "DB URL", "db_url", "database_url", "databaseUrl")
+              if isinstance((value := status.get(key)), str) and value
+          }
+          if len(values) != 1:
+              raise SystemExit(1)
+          database_url = values.pop()
+          parsed = urlsplit(database_url)
+          if (
+              parsed.scheme not in {"postgres", "postgresql"}
+              or parsed.hostname not in local_hosts
+              or not parsed.username
+              or not parsed.password
+              or not parsed.path
+          ):
+              raise SystemExit(1)
+          print(database_url)
+          '
+          )"
+          psql --no-psqlrc --set ON_ERROR_STOP=1 --dbname "$local_db_url" \
+            --command 'CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;'
       - name: Run friend code evidence profile
         env:
           BACKEND_SHARD: ${{ matrix.shard }}
@@ -113,6 +217,12 @@ jobs:
           path: Evidence/tests/${{ matrix.evidence_id }}.json*
           if-no-files-found: error
           retention-days: 90
+      - name: Stop local Supabase services
+        if: ${{ always() }}
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: supabase stop
 
   backend-stream:
     name: backend stream
@@ -132,6 +242,54 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Set up pinned backend toolchain
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          version: 2026.7.6
+          sha256: cf0bf82316337b358ab33a3096958b50816950d6de0a5c931bb433f2911928c0
+          cache: false
+          install_args: supabase postgres pgtap
+      - name: Start and reset isolated local Supabase
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: |
+          set -euo pipefail
+          supabase start
+          supabase db reset --local
+          local_db_url="$(
+            supabase status --output json |
+              python3 -c '
+          import json
+          import sys
+          from urllib.parse import urlsplit
+
+          local_hosts = {"localhost", "127.0.0.1", "::1"}
+          status = json.load(sys.stdin)
+          if not isinstance(status, dict):
+              raise SystemExit(1)
+          values = {
+              value
+              for key in ("DB_URL", "DB URL", "db_url", "database_url", "databaseUrl")
+              if isinstance((value := status.get(key)), str) and value
+          }
+          if len(values) != 1:
+              raise SystemExit(1)
+          database_url = values.pop()
+          parsed = urlsplit(database_url)
+          if (
+              parsed.scheme not in {"postgres", "postgresql"}
+              or parsed.hostname not in local_hosts
+              or not parsed.username
+              or not parsed.password
+              or not parsed.path
+          ):
+              raise SystemExit(1)
+          print(database_url)
+          '
+          )"
+          psql --no-psqlrc --set ON_ERROR_STOP=1 --dbname "$local_db_url" \
+            --command 'CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;'
       - name: Run stream evidence profile
         env:
           BACKEND_SHARD: ${{ matrix.shard }}
@@ -143,3 +301,9 @@ jobs:
           path: Evidence/tests/${{ matrix.evidence_id }}.json*
           if-no-files-found: error
           retention-days: 90
+      - name: Stop local Supabase services
+        if: ${{ always() }}
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ""
+        run: supabase stop

@@ -198,6 +198,7 @@ temporary_log=''
 warning_counts="$(python3 - "$log_file" <<'PY'
 import re
 import sys
+import os
 from pathlib import Path
 
 SKIP_RE = re.compile(r"(?i)(?:#\s*skip\b|\bskipped\b)")
@@ -209,6 +210,7 @@ NO_APPINTENTS_METADATA_RE = re.compile(
 skipped = 0
 compiler_or_test_warnings = 0
 xcode_no_appintents_metadata = 0
+warning_lines = []
 for line in Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").splitlines():
     if WARNING_RE.search(line) and NO_APPINTENTS_METADATA_RE.fullmatch(line):
         xcode_no_appintents_metadata += 1
@@ -217,6 +219,10 @@ for line in Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").spli
         skipped += 1
     if WARNING_RE.search(line):
         compiler_or_test_warnings += 1
+        if len(warning_lines) < 20:
+            warning_lines.append(line.replace(os.getcwd(), "$REPO"))
+for line in warning_lines:
+    print(f"xcode warning: {line}", file=sys.stderr)
 print(f"{skipped}\t{compiler_or_test_warnings}\t{xcode_no_appintents_metadata}")
 PY
 )" || die 'unable to inspect UI build log'
