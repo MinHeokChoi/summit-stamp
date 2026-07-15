@@ -328,10 +328,7 @@ public struct MapFeatureView: View {
             }
         }
         .onChange(of: revision) { _, _ in
-            if let selectedMountainID,
-               !viewModel.pins.contains(where: { $0.id == selectedMountainID }) {
-                self.selectedMountainID = nil
-            }
+            selectedMountainID = nil
         }
     }
 

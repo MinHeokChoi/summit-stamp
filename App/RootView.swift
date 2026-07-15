@@ -18,6 +18,7 @@ struct RootView: View {
             TabView(selection: $selectedTab) {
                 NavigationStack {
                     container.makeMapFeatureView()
+                        .id(container.projectionRevision)
                         .navigationTitle("Map")
                 }
                 .tabItem {

@@ -127,6 +127,7 @@ final class MapFlowTests: XCTestCase {
             "100 official mountains shown"
         )
         XCTAssertTrue(marker.waitForExistence(timeout: launchTimeout))
+        marker.tap()
         XCTAssertTrue(marker.label.hasSuffix("Not visited"))
         XCTAssertTrue(app.staticTexts["map.summary"].waitForExistence(timeout: launchTimeout))
         assertSelectedSummary(
