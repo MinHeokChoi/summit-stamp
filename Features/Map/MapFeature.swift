@@ -270,23 +270,13 @@ public struct MapViewModel: Sendable {
 }
 
 public struct MapFeatureView: View {
-    private let viewModelProvider: @MainActor () -> MapViewModel
+    private let viewModel: MapViewModel
     private let revision: UInt64
     @State private var selectedMountainID: MountainID?
     @State private var mapPosition: MapCameraPosition
 
     public init(viewModel: MapViewModel, revision: UInt64 = 0) {
-        viewModelProvider = { viewModel }
-        self.revision = revision
-        _selectedMountainID = State(initialValue: nil)
-        _mapPosition = State(initialValue: .automatic)
-    }
-
-    public init(
-        viewModelProvider: @escaping @MainActor () -> MapViewModel,
-        revision: UInt64
-    ) {
-        self.viewModelProvider = viewModelProvider
+        self.viewModel = viewModel
         self.revision = revision
         _selectedMountainID = State(initialValue: nil)
         _mapPosition = State(initialValue: .automatic)
@@ -330,10 +320,6 @@ public struct MapFeatureView: View {
         .onChange(of: revision) { _, _ in
             selectedMountainID = nil
         }
-    }
-
-    private var viewModel: MapViewModel {
-        viewModelProvider()
     }
 
     @ViewBuilder

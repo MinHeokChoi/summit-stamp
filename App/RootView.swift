@@ -5,10 +5,13 @@ import HikerMapFeature
 struct RootView: View {
     @Bindable private var container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
-    @State private var selectedTab = 0
+    @State private var selectedTab: Int
 
     init(container: AppContainer) {
         self.container = container
+        _selectedTab = State(
+            initialValue: ProcessInfo.processInfo.arguments.contains("--initial-tab-passport") ? 1 : 0
+        )
     }
 
     var body: some View {

@@ -7,12 +7,13 @@ final class MapFlowTests: XCTestCase {
 
     func testManualPendingAddDeleteUpdatesPinImmediately() throws {
         let app = XCUIApplication()
+        app.launchArguments.append("--initial-tab-passport")
         app.launch()
         defer { app.terminate() }
 
         let passportTab = app.tabBars.buttons["Passport"]
         XCTAssertTrue(passportTab.waitForExistence(timeout: launchTimeout))
-        passportTab.tap()
+        XCTAssertTrue(passportTab.isSelected, "The map flow must launch on the passport test route.")
 
         XCTAssertTrue(
             app.staticTexts["passport.ready"].waitForExistence(timeout: launchTimeout),
