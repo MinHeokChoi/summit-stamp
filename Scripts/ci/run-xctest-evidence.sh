@@ -116,6 +116,73 @@ PY
 validate_text "$scheme" || die 'invalid scheme'
 validate_text "$destination" || die 'invalid destination'
 validate_text "$filter" || die 'invalid test filter'
+[[ "$destination" == 'platform=iOS Simulator,name=iPhone 17,OS=26.5,arch=arm64' ]] || die 'unsupported xctest destination'
+command -v xcrun >/dev/null || die 'xcrun is not available'
+
+simulator_id="$(
+  python3 - <<'PY'
+import json
+import subprocess
+
+runtime = "com.apple.CoreSimulator.SimRuntime.iOS-26-5"
+try:
+    completed = subprocess.run(
+        ["xcrun", "simctl", "list", "devices", "available", "--json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    document = json.loads(completed.stdout)
+    matches = [
+        device["udid"]
+        for device in document.get("devices", {}).get(runtime, [])
+        if device.get("isAvailable") is True and device.get("name") == "iPhone 17"
+    ]
+except (json.JSONDecodeError, KeyError, subprocess.CalledProcessError, TypeError):
+    raise SystemExit(1)
+if len(matches) > 1:
+    raise SystemExit(1)
+print(matches[0] if matches else "")
+PY
+)" || die 'unable to inspect available simulators'
+
+if [[ -z "$simulator_id" ]]; then
+  simulator_id="$(
+    xcrun simctl create \
+      'iPhone 17' \
+      'com.apple.CoreSimulator.SimDeviceType.iPhone-17' \
+      'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
+  )" || die 'unable to create required simulator'
+fi
+[[ "$simulator_id" =~ ^[0-9A-Fa-f-]{36}$ ]] || die 'invalid simulator identifier'
+simulator_state="$(
+  python3 - "$simulator_id" <<'PY'
+import json
+import subprocess
+import sys
+
+target = sys.argv[1]
+completed = subprocess.run(
+    ["xcrun", "simctl", "list", "devices", "available", "--json"],
+    check=True,
+    capture_output=True,
+    text=True,
+)
+document = json.loads(completed.stdout)
+for devices in document.get("devices", {}).values():
+    for device in devices:
+        if device.get("udid") == target:
+            print(device.get("state", ""))
+            raise SystemExit(0)
+raise SystemExit(1)
+PY
+)" || die 'required simulator disappeared'
+if [[ "$simulator_state" == 'Booted' ]]; then
+  xcrun simctl shutdown "$simulator_id" || die 'unable to shut down required simulator'
+fi
+xcrun simctl erase "$simulator_id" || die 'unable to erase required simulator'
+xcrun simctl boot "$simulator_id" || die 'unable to boot required simulator'
+xcrun simctl bootstatus "$simulator_id" -b || die 'required simulator did not finish booting'
 
 python3 "$script_dir/verify-xctest-manifest.py" \
   --manifest "$manifest_path" \

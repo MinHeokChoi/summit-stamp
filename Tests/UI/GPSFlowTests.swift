@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class GPSFlowTests: XCTestCase {
-    private let launchTimeout: TimeInterval = 5
+    private let launchTimeout: TimeInterval = 15
 
     // GPS-004
     func testFreshGPSFallbackStateMachineContract() {
