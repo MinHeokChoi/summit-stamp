@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "expectedClass": "wrong_scheme",
+  "profiles": {
+    "profiles": [
+      {
+        "id": "FIXTURE-UI-001",
+        "runner": "xcodebuild",
+        "job": "ui-test",
+        "output": "fixture-output/fixture-ui-001.json",
+        "scheme": "HikerUITests",
+        "destination": "platform=iOS Simulator,name=iPhone 16,OS=18.2"
+      }
+    ]
+  },
+  "registry": {
+    "requiredIds": [
+      "FIXTURE-UI-001"
+    ],
+    "allowedProducers": {
+      "FIXTURE-UI-001": {
+        "runner": "xcodebuild",
+        "job": "ui-test",
+        "output": "fixture-output/fixture-ui-001.json",
+        "scheme": "HikerUITests",
+        "destination": "platform=iOS Simulator,name=iPhone 16,OS=18.2"
+      }
+    }
+  },
+  "outputs": [
+    {
+      "path": "fixture-output/fixture-ui-001.json",
+      "document": {
+        "id": "FIXTURE-UI-001",
+        "producer": {
+          "runner": "xcodebuild",
+          "job": "ui-test",
+          "output": "fixture-output/fixture-ui-001.json",
+          "scheme": "HikerArchitectureTests",
+          "destination": "platform=iOS Simulator,name=iPhone 16,OS=18.2"
+        }
+      },
+      "sidecar": {
+        "path": "fixture-output/fixture-ui-001.json.sha256",
+        "algorithm": "sha256",
+        "source": "fixture-output/fixture-ui-001.json"
+      }
+    }
+  ]
+}

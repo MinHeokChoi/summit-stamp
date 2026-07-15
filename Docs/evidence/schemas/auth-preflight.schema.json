@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/auth-preflight/v1",
+  "title": "Hiker protected AUTH-005 preflight evidence v1",
+  "description": "Canonical protected staging preflight evidence. It contains only hashes from sources whose signatures are verified with actual Ed25519 public keys, immutable build correlation, coded rejection results, archive and LinkMap digests, and publication hashes. Credentials, endpoints, raw identities, tokens, and personal data are not schema fields.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactType",
+    "id",
+    "status",
+    "correlation",
+    "inputHashes",
+    "attestations",
+    "observation",
+    "collectedAt",
+    "output"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "artifactType": { "const": "protected-auth-preflight-evidence" },
+    "id": {
+      "enum": [
+        "AUTH-005-PREFLIGHT-SERVER",
+        "AUTH-005-PREFLIGHT-ARCHIVE",
+        "AUTH-005-PREFLIGHT"
+      ]
+    },
+    "status": { "const": "passed" },
+    "correlation": { "$ref": "#/$defs/correlation" },
+    "inputHashes": { "type": "object" },
+    "attestations": { "type": "object" },
+    "observation": { "type": "object" },
+    "collectedAt": { "$ref": "#/$defs/utcTimestamp" },
+    "output": { "type": "object" }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "id": { "const": "AUTH-005-PREFLIGHT-SERVER" },
+        "inputHashes": { "$ref": "#/$defs/signedSourceHashes" },
+        "attestations": { "$ref": "#/$defs/signedSourceAttestations" },
+        "observation": { "$ref": "#/$defs/serverObservation" },
+        "output": { "$ref": "#/$defs/serverOutput" }
+      }
+    },
+    {
+      "properties": {
+        "id": { "const": "AUTH-005-PREFLIGHT-ARCHIVE" },
+        "inputHashes": { "$ref": "#/$defs/signedSourceHashes" },
+        "attestations": { "$ref": "#/$defs/signedSourceAttestations" },
+        "observation": { "$ref": "#/$defs/archiveObservation" },
+        "output": { "$ref": "#/$defs/archiveOutput" }
+      }
+    },
+    {
+      "properties": {
+        "id": { "const": "AUTH-005-PREFLIGHT" },
+        "inputHashes": { "$ref": "#/$defs/aggregateHashes" },
+        "attestations": { "$ref": "#/$defs/aggregateAttestations" },
+        "observation": { "$ref": "#/$defs/aggregateHashes" },
+        "output": { "$ref": "#/$defs/aggregateOutput" }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "gitSHA": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "maxLength": 256
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "releaseTag": {
+      "type": "string",
+      "pattern": "^v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "maxLength": 128
+    },
+    "validationCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "maxLength": 32
+    },
+    "correlation": {
+      "type": "object",
+      "required": ["repository", "workflowRunId", "releaseTag", "commitSHA", "buildDigest"],
+      "additionalProperties": false,
+      "properties": {
+        "repository": { "$ref": "#/$defs/repository" },
+        "workflowRunId": { "$ref": "#/$defs/runId" },
+        "releaseTag": { "$ref": "#/$defs/releaseTag" },
+        "commitSHA": { "$ref": "#/$defs/gitSHA" },
+        "buildDigest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "signedSourceHashes": {
+      "type": "object",
+      "required": ["sourceDocumentSHA256", "sourceSignatureSHA256", "sourcePublicKeySHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "sourceDocumentSHA256": { "$ref": "#/$defs/sha256" },
+        "sourceSignatureSHA256": { "$ref": "#/$defs/sha256" },
+        "sourcePublicKeySHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "signedSourceAttestations": {
+      "type": "object",
+      "required": ["githubActionsOIDCVerified", "releaseTagSignatureVerified", "sourceSignatureVerified"],
+      "additionalProperties": false,
+      "properties": {
+        "githubActionsOIDCVerified": { "const": true },
+        "releaseTagSignatureVerified": { "const": true },
+        "sourceSignatureVerified": { "const": true }
+      }
+    },
+    "rejectedProbe": {
+      "type": "object",
+      "required": ["code", "probeSHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "$ref": "#/$defs/validationCode" },
+        "probeSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "serverObservation": {
+      "type": "object",
+      "required": ["sourceObservedAt", "wrongIssuerRejected", "wrongAudienceRejected", "testActorRejected"],
+      "additionalProperties": false,
+      "properties": {
+        "sourceObservedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "wrongIssuerRejected": {
+          "allOf": [
+            { "$ref": "#/$defs/rejectedProbe" },
+            { "properties": { "code": { "const": "WRONG_ISSUER_REJECTED" } } }
+          ]
+        },
+        "wrongAudienceRejected": {
+          "allOf": [
+            { "$ref": "#/$defs/rejectedProbe" },
+            { "properties": { "code": { "const": "WRONG_AUDIENCE_REJECTED" } } }
+          ]
+        },
+        "testActorRejected": {
+          "allOf": [
+            { "$ref": "#/$defs/rejectedProbe" },
+            { "properties": { "code": { "const": "TEST_IDENTITY_REJECTED" } } }
+          ]
+        }
+      }
+    },
+    "archiveObservation": {
+      "type": "object",
+      "required": [
+        "sourceObservedAt",
+        "archiveSHA256",
+        "linkMapSHA256",
+        "codeSigningMetadataSHA256",
+        "archiveSignatureSHA256",
+        "releaseArchiveSigned",
+        "releaseConfiguration",
+        "forbiddenSymbols"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sourceObservedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "archiveSHA256": { "$ref": "#/$defs/sha256" },
+        "linkMapSHA256": { "$ref": "#/$defs/sha256" },
+        "codeSigningMetadataSHA256": { "$ref": "#/$defs/sha256" },
+        "archiveSignatureSHA256": { "$ref": "#/$defs/sha256" },
+        "releaseArchiveSigned": { "const": true },
+        "releaseConfiguration": { "const": "Release" },
+        "forbiddenSymbols": {
+          "type": "object",
+          "required": ["bypassSymbolsAbsent", "testSessionSymbolsAbsent", "testIssuerSymbolsAbsent"],
+          "additionalProperties": false,
+          "properties": {
+            "bypassSymbolsAbsent": { "const": true },
+            "testSessionSymbolsAbsent": { "const": true },
+            "testIssuerSymbolsAbsent": { "const": true }
+          }
+        }
+      }
+    },
+    "aggregateHashes": {
+      "type": "object",
+      "required": ["serverEvidenceSHA256", "serverCommitSHA256", "archiveEvidenceSHA256", "archiveCommitSHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "serverEvidenceSHA256": { "$ref": "#/$defs/sha256" },
+        "serverCommitSHA256": { "$ref": "#/$defs/sha256" },
+        "archiveEvidenceSHA256": { "$ref": "#/$defs/sha256" },
+        "archiveCommitSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "aggregateAttestations": {
+      "type": "object",
+      "required": ["githubActionsOIDCVerified", "releaseTagSignatureVerified", "serverPublicationVerified", "archivePublicationVerified"],
+      "additionalProperties": false,
+      "properties": {
+        "githubActionsOIDCVerified": { "const": true },
+        "releaseTagSignatureVerified": { "const": true },
+        "serverPublicationVerified": { "const": true },
+        "archivePublicationVerified": { "const": true }
+      }
+    },
+    "serverOutput": {
+      "type": "object",
+      "required": ["path", "commitPath"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.json" },
+        "commitPath": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.commit" }
+      }
+    },
+    "archiveOutput": {
+      "type": "object",
+      "required": ["path", "commitPath"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.json" },
+        "commitPath": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.commit" }
+      }
+    },
+    "aggregateOutput": {
+      "type": "object",
+      "required": ["path", "commitPath"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT.json" },
+        "commitPath": { "const": "Evidence/runtime/AUTH-005-PREFLIGHT.commit" }
+      }
+    }
+  }
+}

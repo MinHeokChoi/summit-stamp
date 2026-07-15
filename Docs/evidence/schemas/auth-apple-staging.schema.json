@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/auth-apple-staging/v2",
+  "title": "Hiker protected Apple staging authentication evidence v2",
+  "description": "Canonical evidence from a signed release archive, an attested TestFlight upload/query, a signed immutable Supabase checkpoint receipt, and current team-attested role approvals. It contains only fixed-format correlation data, digests, coded validation results, timestamps, and committed output paths. Raw endpoints, credentials, tokens, authorization codes, nonce/state values, Apple personal data, and keys are not schema fields.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactType",
+    "id",
+    "status",
+    "correlation",
+    "inputHashes",
+    "redactedCorrelation",
+    "validations",
+    "checkpoint",
+    "collectedAt",
+    "output"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "artifactType": { "const": "runtime-evidence" },
+    "id": { "const": "AUTH-APPLE-STAGING" },
+    "status": { "const": "passed" },
+    "correlation": {
+      "type": "object",
+      "required": ["runId", "commitSHA", "buildDigest", "testFlightBuildDigest", "checkpointReceiptId"],
+      "additionalProperties": false,
+      "properties": {
+        "runId": { "$ref": "#/$defs/uuid" },
+        "commitSHA": { "$ref": "#/$defs/gitSHA" },
+        "buildDigest": { "$ref": "#/$defs/sha256" },
+        "testFlightBuildDigest": { "$ref": "#/$defs/sha256" },
+        "checkpointReceiptId": { "$ref": "#/$defs/uuid" }
+      }
+    },
+    "inputHashes": {
+      "type": "object",
+      "required": [
+        "buildProvenanceSHA256",
+        "testFlightObservationSHA256",
+        "checkpointObservationSHA256",
+        "approvalSHA256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "buildProvenanceSHA256": { "$ref": "#/$defs/sha256" },
+        "testFlightObservationSHA256": { "$ref": "#/$defs/sha256" },
+        "checkpointObservationSHA256": { "$ref": "#/$defs/sha256" },
+        "approvalSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "redactedCorrelation": {
+      "type": "object",
+      "required": ["nonceSHA256", "stateSHA256", "callbackSHA256", "actorSHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "nonceSHA256": { "$ref": "#/$defs/sha256" },
+        "stateSHA256": { "$ref": "#/$defs/sha256" },
+        "callbackSHA256": { "$ref": "#/$defs/sha256" },
+        "actorSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "validations": {
+      "type": "object",
+      "required": [
+        "issuerValidated",
+        "issuerCode",
+        "audienceValidated",
+        "audienceCode",
+        "providerValidated",
+        "providerCode",
+        "callbackValidated",
+        "callbackCode",
+        "supabaseSessionIssued",
+        "sessionCode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "issuerValidated": { "const": true },
+        "issuerCode": { "$ref": "#/$defs/validationCode" },
+        "audienceValidated": { "const": true },
+        "audienceCode": { "$ref": "#/$defs/validationCode" },
+        "providerValidated": { "const": true },
+        "providerCode": { "$ref": "#/$defs/validationCode" },
+        "callbackValidated": { "const": true },
+        "callbackCode": { "$ref": "#/$defs/validationCode" },
+        "supabaseSessionIssued": { "const": true },
+        "sessionCode": { "$ref": "#/$defs/validationCode" }
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "required": ["receiptSHA256", "responseSHA256", "signatureSHA256", "completedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "receiptSHA256": { "$ref": "#/$defs/sha256" },
+        "responseSHA256": { "$ref": "#/$defs/sha256" },
+        "signatureSHA256": { "$ref": "#/$defs/sha256" },
+        "completedAt": { "$ref": "#/$defs/utcTimestamp" }
+      }
+    },
+    "collectedAt": { "$ref": "#/$defs/utcTimestamp" },
+    "output": {
+      "type": "object",
+      "required": ["path", "commitPath"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "Evidence/runtime/AUTH-APPLE-STAGING.json" },
+        "commitPath": { "const": "Evidence/runtime/AUTH-APPLE-STAGING.commit" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "gitSHA": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "validationCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "maxLength": 32
+    }
+  }
+}

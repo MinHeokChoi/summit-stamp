@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/evidence-profile/v1",
+  "type": "object",
+  "required": ["schemaVersion", "profiles"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$": { "$ref": "#/$defs/profile" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "path": {
+      "allOf": [
+        { "$ref": "#/$defs/text" },
+        { "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._+/-]+$" }
+      ]
+    },
+    "profile": {
+      "type": "object",
+      "required": ["runner", "assertion", "output", "workflow", "job", "owner", "gate"],
+      "properties": {
+        "runner": { "enum": ["swift", "xcode", "xctest", "ui-build", "bijection-negative", "pgtap", "runtime", "apple-staging"] },
+        "assertion": { "$ref": "#/$defs/text" },
+        "output": { "$ref": "#/$defs/path" },
+        "workflow": { "$ref": "#/$defs/text" },
+        "job": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "gate": { "$ref": "#/$defs/text" },
+        "package": { "$ref": "#/$defs/path" },
+        "filter": { "$ref": "#/$defs/text" },
+        "workspace": { "$ref": "#/$defs/path" },
+        "scheme": { "$ref": "#/$defs/text" },
+        "destination": { "$ref": "#/$defs/text" },
+        "result": { "$ref": "#/$defs/path" },
+        "manifest": { "$ref": "#/$defs/path" },
+        "xctestrun": { "$ref": "#/$defs/path" },
+        "file": { "$ref": "#/$defs/path" },
+        "invalidDirectory": { "$ref": "#/$defs/path" },
+        "validator": { "$ref": "#/$defs/path" },
+        "shard": { "$ref": "#/$defs/text" },
+        "checkKind": { "$ref": "#/$defs/text" },
+        "receipt": { "$ref": "#/$defs/path" },
+        "approval": { "$ref": "#/$defs/path" },
+        "buildProvenance": { "$ref": "#/$defs/path" },
+        "testFlightProvenance": { "$ref": "#/$defs/path" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "runner": { "const": "swift" } } },
+          "then": {
+            "required": ["package", "filter"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "package", "filter"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "xcode" } } },
+          "then": {
+            "required": ["workspace", "scheme", "destination", "filter", "result"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "workspace", "scheme", "destination", "filter", "result"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "xctest" } } },
+          "then": {
+            "required": ["workspace", "scheme", "manifest", "xctestrun", "filter", "destination", "result"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "workspace", "scheme", "manifest", "xctestrun", "filter", "destination", "result"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "ui-build" } } },
+          "then": {
+            "required": ["workspace", "scheme", "destination", "result"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "workspace", "scheme", "destination", "result"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "bijection-negative" } } },
+          "then": {
+            "required": ["file", "invalidDirectory", "validator"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "file", "invalidDirectory", "validator"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "pgtap" } } },
+          "then": {
+            "required": ["file", "shard"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "file", "shard"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "runtime" } } },
+          "then": {
+            "required": ["checkKind"],
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "checkKind"] }
+          }
+        },
+        {
+          "if": { "properties": { "runner": { "const": "apple-staging" } } },
+          "then": {
+            "required": ["receipt", "approval", "buildProvenance", "testFlightProvenance"],
+            "properties": {
+              "receipt": { "const": "Evidence/runtime/AUTH-APPLE-STAGING-source.json" },
+              "approval": { "const": "Evidence/runtime/approvals/m2a.json" },
+              "buildProvenance": { "const": "Evidence/runtime/M2A-BUILD.json" },
+              "testFlightProvenance": { "const": "Evidence/runtime/M2A-UPLOAD.json" },
+              "output": { "const": "Evidence/runtime/AUTH-APPLE-STAGING.json" },
+              "workflow": { "const": "release-evidence" },
+              "job": { "const": "m2a-auth-shell" },
+              "gate": { "const": "M2A" }
+            },
+            "propertyNames": { "enum": ["runner", "assertion", "output", "workflow", "job", "owner", "gate", "receipt", "approval", "buildProvenance", "testFlightProvenance"] }
+          }
+        }
+      ]
+    }
+  }
+}

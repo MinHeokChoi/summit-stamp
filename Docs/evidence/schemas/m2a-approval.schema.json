@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/m2a-approval/v2",
+  "title": "Hiker M2A role approvals v2",
+  "description": "Protected-environment, current GitHub-team approval observations for AUTH-APPLE-STAGING. Subjects are run-scoped HMAC pseudonyms; the semantic validator requires distinct subjects and exactly one active Product, Security, or Ops membership per subject.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactType",
+    "gate",
+    "issueURL",
+    "issueSnapshotSHA256",
+    "teamSnapshotSHA256",
+    "githubRunId",
+    "gitSHA",
+    "buildDigest",
+    "testFlightDigest",
+    "pseudonymDomain",
+    "collectedAt",
+    "teamSnapshots",
+    "approvals"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "artifactType": { "const": "m2a-role-approvals" },
+    "gate": { "const": "M2A" },
+    "issueURL": {
+      "type": "string",
+      "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$",
+      "maxLength": 256
+    },
+    "issueSnapshotSHA256": { "$ref": "#/$defs/sha256" },
+    "teamSnapshotSHA256": { "$ref": "#/$defs/sha256" },
+    "githubRunId": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "gitSHA": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "buildDigest": { "$ref": "#/$defs/sha256" },
+    "testFlightDigest": { "$ref": "#/$defs/sha256" },
+    "pseudonymDomain": { "const": "m2a-approver/v1" },
+    "collectedAt": { "$ref": "#/$defs/utcTimestamp" },
+    "teamSnapshots": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/teamSnapshot" },
+      "allOf": [
+        {
+          "contains": { "properties": { "role": { "const": "Product" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": { "properties": { "role": { "const": "Security" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": { "properties": { "role": { "const": "Ops" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    },
+    "approvals": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/approval" },
+      "allOf": [
+        {
+          "contains": { "properties": { "role": { "const": "Product" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": { "properties": { "role": { "const": "Security" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": { "properties": { "role": { "const": "Ops" } }, "required": ["role"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "maxLength": 32
+    },
+    "teamSnapshot": {
+      "type": "object",
+      "required": ["role", "teamId", "teamSlug", "teamResponseSHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "enum": ["Product", "Security", "Ops"] },
+        "teamId": { "type": "string", "pattern": "^[1-9][0-9]{0,19}$" },
+        "teamSlug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,99}$" },
+        "teamResponseSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "membershipAttestation": {
+      "type": "object",
+      "required": ["role", "teamId", "teamSlug", "state", "responseSHA256"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "enum": ["Product", "Security", "Ops"] },
+        "teamId": { "type": "string", "pattern": "^[1-9][0-9]{0,19}$" },
+        "teamSlug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,99}$" },
+        "state": { "enum": ["active", "inactive"] },
+        "responseSHA256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "required": [
+        "role",
+        "status",
+        "subjectPseudonym",
+        "approvedAt",
+        "approvalDigest",
+        "commentSHA256",
+        "membershipAttestations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "enum": ["Product", "Security", "Ops"] },
+        "status": { "const": "active" },
+        "subjectPseudonym": {
+          "description": "Run-scoped, domain-separated HMAC-SHA-256 pseudonym. Distinctness is enforced by the semantic validator.",
+          "$ref": "#/$defs/sha256"
+        },
+        "approvedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "approvalDigest": { "$ref": "#/$defs/sha256" },
+        "commentSHA256": { "$ref": "#/$defs/sha256" },
+        "membershipAttestations": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/membershipAttestation" },
+          "allOf": [
+            {
+              "contains": { "properties": { "role": { "const": "Product" } }, "required": ["role"] },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": { "properties": { "role": { "const": "Security" } }, "required": ["role"] },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": { "properties": { "role": { "const": "Ops" } }, "required": ["role"] },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        }
+      }
+    }
+  }
+}

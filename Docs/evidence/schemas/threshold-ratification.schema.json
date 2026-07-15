@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/threshold-ratification/v1",
+  "title": "Hiker threshold ratification v1",
+  "description": "An immutable OPS-005 threshold ratification. Every bound is an operational safety minimum: a ratification may tighten it, never weaken it. The document contains only release identifiers, digests, timestamps, and numeric policy; it has no credentials, endpoints, or personal data.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactType",
+    "id",
+    "tag",
+    "commit",
+    "approvalSHA256",
+    "createdAt",
+    "thresholds"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "artifactType": { "const": "threshold-ratification" },
+    "id": { "const": "OPS-005" },
+    "tag": {
+      "type": "string",
+      "pattern": "^v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "maxLength": 128
+    },
+    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$" },
+    "approvalSHA256": { "$ref": "#/$defs/sha256" },
+    "createdAt": { "$ref": "#/$defs/utcTimestamp" },
+    "thresholds": {
+      "type": "object",
+      "required": ["beta", "production"],
+      "additionalProperties": false,
+      "properties": {
+        "beta": { "$ref": "#/$defs/betaThresholds" },
+        "production": { "$ref": "#/$defs/productionThresholds" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "maxLength": 32
+    },
+    "zero": {
+      "type": "integer",
+      "const": 0
+    },
+    "betaThresholds": {
+      "type": "object",
+      "required": [
+        "minimumWindowHours",
+        "crashFreeSessionsPercent",
+        "mapP95Seconds",
+        "bootstrapP95Seconds",
+        "authSuccessPercent",
+        "bootstrapSuccessPercent",
+        "manualMutationSuccessPercent",
+        "p0Count",
+        "unresolvedP1Count",
+        "authBypassCount",
+        "rawGPSPersistenceCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minimumWindowHours": { "type": "number", "minimum": 168 },
+        "crashFreeSessionsPercent": { "type": "number", "minimum": 99.5, "maximum": 100 },
+        "mapP95Seconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 2.5 },
+        "bootstrapP95Seconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 3 },
+        "authSuccessPercent": { "type": "number", "minimum": 99, "maximum": 100 },
+        "bootstrapSuccessPercent": { "type": "number", "minimum": 99, "maximum": 100 },
+        "manualMutationSuccessPercent": { "type": "number", "minimum": 99, "maximum": 100 },
+        "p0Count": { "$ref": "#/$defs/zero" },
+        "unresolvedP1Count": { "$ref": "#/$defs/zero" },
+        "authBypassCount": { "$ref": "#/$defs/zero" },
+        "rawGPSPersistenceCount": { "$ref": "#/$defs/zero" }
+      }
+    },
+    "productionThresholds": {
+      "type": "object",
+      "required": [
+        "minimumWindowHours",
+        "crashFreeSessionsPercent",
+        "crashFreeUsersPercent",
+        "server5xxPercent",
+        "mutationSuccessPercent",
+        "manualOnlineAckP95Seconds",
+        "revokeEventP95Seconds",
+        "failClosedLeaseSeconds",
+        "p0Count",
+        "unresolvedP1Count",
+        "directDMLExposureCount",
+        "privacyExposureCount",
+        "authBypassCount",
+        "revocationExposureCount",
+        "rawGPSPersistenceCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minimumWindowHours": { "type": "number", "minimum": 24 },
+        "crashFreeSessionsPercent": { "type": "number", "minimum": 99.7, "maximum": 100 },
+        "crashFreeUsersPercent": { "type": "number", "minimum": 99.5, "maximum": 100 },
+        "server5xxPercent": { "type": "number", "minimum": 0, "exclusiveMaximum": 0.5 },
+        "mutationSuccessPercent": { "type": "number", "minimum": 99.5, "maximum": 100 },
+        "manualOnlineAckP95Seconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 2 },
+        "revokeEventP95Seconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 5 },
+        "failClosedLeaseSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 30 },
+        "p0Count": { "$ref": "#/$defs/zero" },
+        "unresolvedP1Count": { "$ref": "#/$defs/zero" },
+        "directDMLExposureCount": { "$ref": "#/$defs/zero" },
+        "privacyExposureCount": { "$ref": "#/$defs/zero" },
+        "authBypassCount": { "$ref": "#/$defs/zero" },
+        "revocationExposureCount": { "$ref": "#/$defs/zero" },
+        "rawGPSPersistenceCount": { "$ref": "#/$defs/zero" }
+      }
+    }
+  }
+}

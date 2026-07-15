@@ -1,0 +1,1218 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "publisher": "Korea Forest Service",
+    "page": "https://map.forest.go.kr/forest/?systype=appdata",
+    "endpoint": "https://map.forest.go.kr/gis1/iserver/services/data-fdms/rest/data/featureResults.json?returnContent=true",
+    "table": "FDMS_BASE:TB_FGDI_FS_F100",
+    "query": "1=1",
+    "sourceCoordinateReferenceSystem": "EPSG:5179",
+    "targetCoordinateReferenceSystem": "EPSG:4326",
+    "retrievedAt": "2026-07-14T00:03:32.659Z",
+    "rawSHA256": "c82eab718f45afc58bbe45d7f6a4904187fb7f0d0cd6aadd0a287ae78d13128d"
+  },
+  "recordCount": 100,
+  "recordsSHA256": "7c9690442aa6cadf24c6eedef4b0d2b5a2c25c62da70761a4eb671d23b56dce9",
+  "records": [
+    {
+      "officialMountainID": 1,
+      "name": "가야산",
+      "elevationMeters": 1430.0,
+      "administrativeCode": "48890330",
+      "administrativeName": "가야면",
+      "representativePoint": {
+        "latitude": 35.7760614653925,
+        "longitude": 128.16307418153832,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 2,
+      "name": "가리산",
+      "elevationMeters": 1051.0,
+      "administrativeCode": "51110380",
+      "administrativeName": "북산면",
+      "representativePoint": {
+        "latitude": 37.87108173416483,
+        "longitude": 127.95635142530367,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 3,
+      "name": "가리왕산",
+      "elevationMeters": 1561.0,
+      "administrativeCode": "51760360",
+      "administrativeName": "진부면",
+      "representativePoint": {
+        "latitude": 37.46188651110358,
+        "longitude": 128.5635737334791,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 4,
+      "name": "가지산",
+      "elevationMeters": 1240.0,
+      "administrativeCode": "47820350",
+      "administrativeName": "운문면",
+      "representativePoint": {
+        "latitude": 35.620115656364575,
+        "longitude": 129.00233152563774,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 5,
+      "name": "감악산",
+      "elevationMeters": 675.0,
+      "administrativeCode": "41480370",
+      "administrativeName": "적성면",
+      "representativePoint": {
+        "latitude": 37.941344042198104,
+        "longitude": 126.96969296809252,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 6,
+      "name": "강천산",
+      "elevationMeters": 584.0,
+      "administrativeCode": "46710380",
+      "administrativeName": "용면",
+      "representativePoint": {
+        "latitude": 35.40356945398713,
+        "longitude": 127.04983940624673,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 7,
+      "name": "계룡산",
+      "elevationMeters": 845.0,
+      "administrativeCode": "44150330",
+      "administrativeName": "계룡면",
+      "representativePoint": {
+        "latitude": 36.3422816669749,
+        "longitude": 127.20573349073513,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 8,
+      "name": "계방산",
+      "elevationMeters": 1577.0,
+      "administrativeCode": "51720390",
+      "administrativeName": "내면",
+      "representativePoint": {
+        "latitude": 37.728321024796635,
+        "longitude": 128.46591131956947,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 9,
+      "name": "공작산",
+      "elevationMeters": 887.0,
+      "administrativeCode": "51110390",
+      "administrativeName": "동내면",
+      "representativePoint": {
+        "latitude": 37.71524521805631,
+        "longitude": 128.0100511644471,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 10,
+      "name": "관악산",
+      "elevationMeters": 629.0,
+      "administrativeCode": "11620102",
+      "administrativeName": "신림동",
+      "representativePoint": {
+        "latitude": 37.44107570463481,
+        "longitude": 126.96295961954957,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 11,
+      "name": "구병산",
+      "elevationMeters": 877.0,
+      "administrativeCode": "43720310",
+      "administrativeName": "내속리면",
+      "representativePoint": {
+        "latitude": 36.46947824218034,
+        "longitude": 127.86200698944201,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 12,
+      "name": "금산",
+      "elevationMeters": 701.0,
+      "administrativeCode": "48840320",
+      "administrativeName": "상주면",
+      "representativePoint": {
+        "latitude": 34.7531074129588,
+        "longitude": 127.98038924789843,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 13,
+      "name": "금수산",
+      "elevationMeters": 1016.0,
+      "administrativeCode": "43150330",
+      "administrativeName": "수산면",
+      "representativePoint": {
+        "latitude": 36.9847891157796,
+        "longitude": 128.25666733208251,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 14,
+      "name": "금오산",
+      "elevationMeters": 977.0,
+      "administrativeCode": "47190108",
+      "administrativeName": "남통동",
+      "representativePoint": {
+        "latitude": 36.09160809439772,
+        "longitude": 128.29982883576946,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 15,
+      "name": "금정산",
+      "elevationMeters": 802.0,
+      "administrativeCode": "48330310",
+      "administrativeName": "동면",
+      "representativePoint": {
+        "latitude": 35.280149439275974,
+        "longitude": 129.05059247481125,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 16,
+      "name": "깃대봉",
+      "elevationMeters": 368.0,
+      "administrativeCode": "46910360",
+      "administrativeName": "흑산면",
+      "representativePoint": {
+        "latitude": 34.697100349659785,
+        "longitude": 125.20419722588856,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 17,
+      "name": "남산",
+      "elevationMeters": 468.0,
+      "administrativeCode": "47130122",
+      "administrativeName": "구황동",
+      "representativePoint": {
+        "latitude": 35.837884122919206,
+        "longitude": 129.26428743766223,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 18,
+      "name": "내연산",
+      "elevationMeters": 710.0,
+      "administrativeCode": "47770320",
+      "administrativeName": "남정면",
+      "representativePoint": {
+        "latitude": 36.27889397517117,
+        "longitude": 129.28940254035976,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 19,
+      "name": "내장산",
+      "elevationMeters": 763.0,
+      "administrativeCode": "52770370",
+      "administrativeName": "복흥면",
+      "representativePoint": {
+        "latitude": 35.47821546750881,
+        "longitude": 126.88918533667449,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 20,
+      "name": "대둔산",
+      "elevationMeters": 878.0,
+      "administrativeCode": "52710380",
+      "administrativeName": "운주면",
+      "representativePoint": {
+        "latitude": 36.123397200191015,
+        "longitude": 127.31933647280219,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 21,
+      "name": "대암산",
+      "elevationMeters": 1304.0,
+      "administrativeCode": "51800340",
+      "administrativeName": "해안면",
+      "representativePoint": {
+        "latitude": 38.21098325239825,
+        "longitude": 128.1347564636627,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 22,
+      "name": "대야산",
+      "elevationMeters": 931.0,
+      "administrativeCode": "43760360",
+      "administrativeName": "청천면",
+      "representativePoint": {
+        "latitude": 36.66895923130192,
+        "longitude": 127.92941350323085,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 23,
+      "name": "덕숭산",
+      "elevationMeters": 495.0,
+      "administrativeCode": "44810360",
+      "administrativeName": "덕산면",
+      "representativePoint": {
+        "latitude": 36.671466313943995,
+        "longitude": 126.62399767196106,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 24,
+      "name": "덕유산",
+      "elevationMeters": 1614.0,
+      "administrativeCode": "52730340",
+      "administrativeName": "안성면",
+      "representativePoint": {
+        "latitude": 35.85946525223085,
+        "longitude": 127.74632944441488,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 25,
+      "name": "덕항산",
+      "elevationMeters": 1071.0,
+      "administrativeCode": "51190116",
+      "administrativeName": "하사미동",
+      "representativePoint": {
+        "latitude": 37.308715479727695,
+        "longitude": 129.01250273998295,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 26,
+      "name": "도락산",
+      "elevationMeters": 964.0,
+      "administrativeCode": "43800360",
+      "administrativeName": "단성면",
+      "representativePoint": {
+        "latitude": 36.856387996579684,
+        "longitude": 128.31107007733812,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 27,
+      "name": "도봉산",
+      "elevationMeters": 740.0,
+      "administrativeCode": "41630340",
+      "administrativeName": "장흥면",
+      "representativePoint": {
+        "latitude": 37.696856053032526,
+        "longitude": 127.01049726986881,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 28,
+      "name": "두륜산",
+      "elevationMeters": 703.0,
+      "administrativeCode": "46820310",
+      "administrativeName": "삼산면",
+      "representativePoint": {
+        "latitude": 34.47319857838312,
+        "longitude": 126.63654649275635,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 29,
+      "name": "두타산",
+      "elevationMeters": 1353.0,
+      "administrativeCode": "51170124",
+      "administrativeName": "삼화동",
+      "representativePoint": {
+        "latitude": 37.426410079904535,
+        "longitude": 129.00469941926093,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 30,
+      "name": "마니산",
+      "elevationMeters": 469.0,
+      "administrativeCode": "28710340",
+      "administrativeName": "화도면",
+      "representativePoint": {
+        "latitude": 37.612629219009264,
+        "longitude": 126.43464112863053,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 31,
+      "name": "마이산",
+      "elevationMeters": 686.0,
+      "administrativeCode": "52720250",
+      "administrativeName": "진안읍",
+      "representativePoint": {
+        "latitude": 35.76108700101668,
+        "longitude": 127.41622089184575,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 32,
+      "name": "명성산",
+      "elevationMeters": 923.0,
+      "administrativeCode": "51780256",
+      "administrativeName": "갈말읍",
+      "representativePoint": {
+        "latitude": 38.10428164071305,
+        "longitude": 127.33800199362103,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 33,
+      "name": "명지산",
+      "elevationMeters": 1267.0,
+      "administrativeCode": "41820350",
+      "administrativeName": "북면",
+      "representativePoint": {
+        "latitude": 37.941382829608756,
+        "longitude": 127.4321316473777,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 34,
+      "name": "모악산",
+      "elevationMeters": 794.0,
+      "administrativeCode": "52210450",
+      "administrativeName": "금산면",
+      "representativePoint": {
+        "latitude": 35.728077215140424,
+        "longitude": 127.08510225373016,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 35,
+      "name": "무등산",
+      "elevationMeters": 1187.0,
+      "administrativeCode": "29170120",
+      "administrativeName": "금곡동",
+      "representativePoint": {
+        "latitude": 35.12433829134472,
+        "longitude": 127.00888909751231,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 36,
+      "name": "무학산",
+      "elevationMeters": 761.0,
+      "administrativeCode": "48160162",
+      "administrativeName": "두척동",
+      "representativePoint": {
+        "latitude": 35.210050542282886,
+        "longitude": 128.53553010284406,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 37,
+      "name": "미륵산",
+      "elevationMeters": 461.0,
+      "administrativeCode": "48220310",
+      "administrativeName": "용남면",
+      "representativePoint": {
+        "latitude": 34.81042199185728,
+        "longitude": 128.41614868893151,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 38,
+      "name": "민주지산",
+      "elevationMeters": 1242.0,
+      "administrativeCode": "44710330",
+      "administrativeName": "부리면",
+      "representativePoint": {
+        "latitude": 36.03939911973876,
+        "longitude": 127.84910995389845,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 39,
+      "name": "방장산",
+      "elevationMeters": 743.0,
+      "administrativeCode": "52790420",
+      "administrativeName": "신림면",
+      "representativePoint": {
+        "latitude": 35.45558793832251,
+        "longitude": 126.75431913709983,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 40,
+      "name": "방태산",
+      "elevationMeters": 1444.0,
+      "administrativeCode": "51810350",
+      "administrativeName": "상남면",
+      "representativePoint": {
+        "latitude": 37.88829194472804,
+        "longitude": 128.38999949102006,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 41,
+      "name": "백덕산",
+      "elevationMeters": 1350.0,
+      "administrativeCode": "51750370",
+      "administrativeName": "수주면",
+      "representativePoint": {
+        "latitude": 37.396539583885406,
+        "longitude": 128.2936237772579,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 42,
+      "name": "백암산",
+      "elevationMeters": 741.0,
+      "administrativeCode": "46880400",
+      "administrativeName": "북하면",
+      "representativePoint": {
+        "latitude": 35.460687013804666,
+        "longitude": 126.86877382045746,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 43,
+      "name": "백운산(포천)",
+      "elevationMeters": 904.0,
+      "administrativeCode": "41650380",
+      "administrativeName": "이동면",
+      "representativePoint": {
+        "latitude": 38.07489438371278,
+        "longitude": 127.44429505225361,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 44,
+      "name": "백운산(광양)",
+      "elevationMeters": 1218.0,
+      "administrativeCode": "46230360",
+      "administrativeName": "다압면",
+      "representativePoint": {
+        "latitude": 35.106219627366116,
+        "longitude": 127.62111722315615,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 45,
+      "name": "백운산(정선)",
+      "elevationMeters": 883.0,
+      "administrativeCode": "51760310",
+      "administrativeName": "미탄면",
+      "representativePoint": {
+        "latitude": 37.28010180713352,
+        "longitude": 128.5961446587304,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 46,
+      "name": "변산",
+      "elevationMeters": 508.0,
+      "administrativeCode": "52800390",
+      "administrativeName": "상서면",
+      "representativePoint": {
+        "latitude": 35.635588214649474,
+        "longitude": 126.62175137020935,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 47,
+      "name": "북한산",
+      "elevationMeters": 837.0,
+      "administrativeCode": "41281107",
+      "administrativeName": "북한동",
+      "representativePoint": {
+        "latitude": 37.65865196290704,
+        "longitude": 126.9779895597336,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 48,
+      "name": "비슬산",
+      "elevationMeters": 1084.0,
+      "administrativeCode": "27710370",
+      "administrativeName": "유가면",
+      "representativePoint": {
+        "latitude": 35.715609655003256,
+        "longitude": 128.52425977587555,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 49,
+      "name": "삼악산",
+      "elevationMeters": 654.0,
+      "administrativeCode": "51110350",
+      "administrativeName": "서면",
+      "representativePoint": {
+        "latitude": 37.83980833218117,
+        "longitude": 127.66052551832544,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 50,
+      "name": "서대산",
+      "elevationMeters": 904.0,
+      "administrativeCode": "44710390",
+      "administrativeName": "추부면",
+      "representativePoint": {
+        "latitude": 36.22072449928958,
+        "longitude": 127.53834143079285,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 51,
+      "name": "선운산",
+      "elevationMeters": 336.0,
+      "administrativeCode": "52790360",
+      "administrativeName": "해리면",
+      "representativePoint": {
+        "latitude": 35.48068599770202,
+        "longitude": 126.51066314051683,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 52,
+      "name": "설악산",
+      "elevationMeters": 1708.0,
+      "administrativeCode": "51830310",
+      "administrativeName": "서면",
+      "representativePoint": {
+        "latitude": 38.11899025977232,
+        "longitude": 128.46517898891142,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 53,
+      "name": "성인봉",
+      "elevationMeters": 984.0,
+      "administrativeCode": "47940310",
+      "administrativeName": "서면",
+      "representativePoint": {
+        "latitude": 37.50076497863418,
+        "longitude": 130.86609240231437,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 54,
+      "name": "소백산",
+      "elevationMeters": 1439.0,
+      "administrativeCode": "43800320",
+      "administrativeName": "가곡면",
+      "representativePoint": {
+        "latitude": 36.957366337568324,
+        "longitude": 128.4843601692895,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 55,
+      "name": "소요산",
+      "elevationMeters": 587.0,
+      "administrativeCode": "41250110",
+      "administrativeName": "하봉암동",
+      "representativePoint": {
+        "latitude": 37.93718096658094,
+        "longitude": 127.08703880257595,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 56,
+      "name": "속리산",
+      "elevationMeters": 1057.0,
+      "administrativeCode": "43720310",
+      "administrativeName": "내속리면",
+      "representativePoint": {
+        "latitude": 36.54274699386788,
+        "longitude": 127.87045000709074,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 57,
+      "name": "신불산",
+      "elevationMeters": 1209.0,
+      "administrativeCode": "31710380",
+      "administrativeName": "상북면",
+      "representativePoint": {
+        "latitude": 35.539734211353995,
+        "longitude": 129.05253866340553,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 58,
+      "name": "연화산",
+      "elevationMeters": 528.0,
+      "administrativeCode": "48820380",
+      "administrativeName": "개천면",
+      "representativePoint": {
+        "latitude": 35.070960679968266,
+        "longitude": 128.26497245309537,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 59,
+      "name": "오대산",
+      "elevationMeters": 1563.0,
+      "administrativeCode": "51720390",
+      "administrativeName": "내면",
+      "representativePoint": {
+        "latitude": 37.794123882926975,
+        "longitude": 128.54305009750772,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 60,
+      "name": "오봉산",
+      "elevationMeters": 779.0,
+      "administrativeCode": "51790310",
+      "administrativeName": "간동면",
+      "representativePoint": {
+        "latitude": 38.000576830099,
+        "longitude": 127.80407346087847,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 61,
+      "name": "용문산",
+      "elevationMeters": 1157.0,
+      "administrativeCode": "41830400",
+      "administrativeName": "용문면",
+      "representativePoint": {
+        "latitude": 37.56112825144255,
+        "longitude": 127.54567205710163,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 62,
+      "name": "용화산",
+      "elevationMeters": 878.0,
+      "administrativeCode": "51790320",
+      "administrativeName": "하남면",
+      "representativePoint": {
+        "latitude": 38.038245431823356,
+        "longitude": 127.74730014229955,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 63,
+      "name": "운문산",
+      "elevationMeters": 1188.0,
+      "administrativeCode": "48270340",
+      "administrativeName": "산내면",
+      "representativePoint": {
+        "latitude": 35.61568760888703,
+        "longitude": 128.9595335240719,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 64,
+      "name": "운악산",
+      "elevationMeters": 936.0,
+      "administrativeCode": "41650410",
+      "administrativeName": "화현면",
+      "representativePoint": {
+        "latitude": 37.87681189432016,
+        "longitude": 127.32521144475446,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 65,
+      "name": "운장산",
+      "elevationMeters": 1126.0,
+      "administrativeCode": "52710400",
+      "administrativeName": "동상면",
+      "representativePoint": {
+        "latitude": 35.911389769705906,
+        "longitude": 127.35760521260731,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 66,
+      "name": "월악산",
+      "elevationMeters": 1094.0,
+      "administrativeCode": "43150350",
+      "administrativeName": "한수면",
+      "representativePoint": {
+        "latitude": 36.88578398459032,
+        "longitude": 128.10564332219667,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 67,
+      "name": "월출산",
+      "elevationMeters": 809.0,
+      "administrativeCode": "46830250",
+      "administrativeName": "영암읍",
+      "representativePoint": {
+        "latitude": 34.766549898885955,
+        "longitude": 126.70404406988784,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 68,
+      "name": "유명산",
+      "elevationMeters": 862.0,
+      "administrativeCode": "41820310",
+      "administrativeName": "설악면",
+      "representativePoint": {
+        "latitude": 37.57539301910176,
+        "longitude": 127.48681082018597,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 69,
+      "name": "응봉산",
+      "elevationMeters": 999.0,
+      "administrativeCode": "51230350",
+      "administrativeName": "가곡면",
+      "representativePoint": {
+        "latitude": 37.07654261788883,
+        "longitude": 129.2302090424472,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 70,
+      "name": "장안산",
+      "elevationMeters": 1237.0,
+      "administrativeCode": "52740250",
+      "administrativeName": "장수읍",
+      "representativePoint": {
+        "latitude": 35.6291627756415,
+        "longitude": 127.59481089872851,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 71,
+      "name": "재약산",
+      "elevationMeters": 1189.0,
+      "administrativeCode": "48270340",
+      "administrativeName": "산내면",
+      "representativePoint": {
+        "latitude": 35.560870443612714,
+        "longitude": 128.97090452278528,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 72,
+      "name": "적상산",
+      "elevationMeters": 1034.0,
+      "administrativeCode": "52730330",
+      "administrativeName": "적상면",
+      "representativePoint": {
+        "latitude": 35.94635456787954,
+        "longitude": 127.68952183186948,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 73,
+      "name": "점봉산",
+      "elevationMeters": 1424.0,
+      "administrativeCode": "51810250",
+      "administrativeName": "인제읍",
+      "representativePoint": {
+        "latitude": 38.048737562755804,
+        "longitude": 128.4254173595368,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 74,
+      "name": "조계산",
+      "elevationMeters": 884.0,
+      "administrativeCode": "46150250",
+      "administrativeName": "승주읍",
+      "representativePoint": {
+        "latitude": 35.00118197990586,
+        "longitude": 127.31348735665475,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 75,
+      "name": "주왕산",
+      "elevationMeters": 721.0,
+      "administrativeCode": "47750310",
+      "administrativeName": "부동면",
+      "representativePoint": {
+        "latitude": 36.38952455956733,
+        "longitude": 129.16274449469657,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 76,
+      "name": "주흘산",
+      "elevationMeters": 1106.0,
+      "administrativeCode": "47280250",
+      "administrativeName": "문경읍",
+      "representativePoint": {
+        "latitude": 36.78825867409735,
+        "longitude": 128.10093682404036,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 77,
+      "name": "지리산",
+      "elevationMeters": 1915.0,
+      "administrativeCode": "48870310",
+      "administrativeName": "마천면",
+      "representativePoint": {
+        "latitude": 35.3370747033326,
+        "longitude": 127.73059999391832,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 78,
+      "name": "지리산(통영)",
+      "elevationMeters": 398.0,
+      "administrativeCode": "48220370",
+      "administrativeName": "사량면",
+      "representativePoint": {
+        "latitude": 34.846026432550566,
+        "longitude": 128.1853167083938,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 79,
+      "name": "천관산",
+      "elevationMeters": 723.0,
+      "administrativeCode": "46800256",
+      "administrativeName": "대덕읍",
+      "representativePoint": {
+        "latitude": 34.53160019672535,
+        "longitude": 126.91846615035432,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 80,
+      "name": "천마산",
+      "elevationMeters": 812.0,
+      "administrativeCode": "41360262",
+      "administrativeName": "오남읍",
+      "representativePoint": {
+        "latitude": 37.679977265553894,
+        "longitude": 127.27266540725905,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 81,
+      "name": "천성산",
+      "elevationMeters": 922.0,
+      "administrativeCode": "48330320",
+      "administrativeName": "원동면",
+      "representativePoint": {
+        "latitude": 35.330981352207694,
+        "longitude": 128.985245801155,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 82,
+      "name": "천태산",
+      "elevationMeters": 715.0,
+      "administrativeCode": "44710320",
+      "administrativeName": "제원면",
+      "representativePoint": {
+        "latitude": 36.159212833755184,
+        "longitude": 127.59994438024209,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 83,
+      "name": "청량산",
+      "elevationMeters": 870.0,
+      "administrativeCode": "47920370",
+      "administrativeName": "명호면",
+      "representativePoint": {
+        "latitude": 36.79433615776348,
+        "longitude": 128.9087801215278,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 84,
+      "name": "추월산",
+      "elevationMeters": 731.0,
+      "administrativeCode": "52770370",
+      "administrativeName": "복흥면",
+      "representativePoint": {
+        "latitude": 35.400068761213255,
+        "longitude": 126.97630281537134,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 85,
+      "name": "축령산",
+      "elevationMeters": 879.0,
+      "administrativeCode": "41360340",
+      "administrativeName": "수동면",
+      "representativePoint": {
+        "latitude": 37.75262785240715,
+        "longitude": 127.33394953259712,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 86,
+      "name": "치악산",
+      "elevationMeters": 1288.0,
+      "administrativeCode": "51130310",
+      "administrativeName": "소초면",
+      "representativePoint": {
+        "latitude": 37.365104700206466,
+        "longitude": 128.05541649631033,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 87,
+      "name": "칠갑산",
+      "elevationMeters": 561.0,
+      "administrativeCode": "44790320",
+      "administrativeName": "대치면",
+      "representativePoint": {
+        "latitude": 36.41286024272212,
+        "longitude": 126.88479158788348,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 88,
+      "name": "태백산",
+      "elevationMeters": 1567.0,
+      "administrativeCode": "51190108",
+      "administrativeName": "혈동",
+      "representativePoint": {
+        "latitude": 37.09844845436117,
+        "longitude": 128.91608680271824,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 89,
+      "name": "태화산",
+      "elevationMeters": 1027.0,
+      "administrativeCode": "51750250",
+      "administrativeName": "영월읍",
+      "representativePoint": {
+        "latitude": 37.117477911856,
+        "longitude": 128.48520141129416,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 90,
+      "name": "팔공산",
+      "elevationMeters": 1193.0,
+      "administrativeCode": "27140134",
+      "administrativeName": "도학동",
+      "representativePoint": {
+        "latitude": 36.016289712488714,
+        "longitude": 128.69455391713677,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 91,
+      "name": "팔봉산",
+      "elevationMeters": 302.0,
+      "administrativeCode": "51720370",
+      "administrativeName": "서면",
+      "representativePoint": {
+        "latitude": 37.69594881307573,
+        "longitude": 127.69656438122166,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 92,
+      "name": "팔영산",
+      "elevationMeters": 609.0,
+      "administrativeCode": "46770440",
+      "administrativeName": "영남면",
+      "representativePoint": {
+        "latitude": 34.617373487172095,
+        "longitude": 127.43576965245845,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 93,
+      "name": "한라산",
+      "elevationMeters": 1950.0,
+      "administrativeCode": "50130122",
+      "administrativeName": "영남동",
+      "representativePoint": {
+        "latitude": 33.36128098469411,
+        "longitude": 126.52998077415303,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 94,
+      "name": "화악산",
+      "elevationMeters": 1468.0,
+      "administrativeCode": "41820350",
+      "administrativeName": "북면",
+      "representativePoint": {
+        "latitude": 37.995270893331565,
+        "longitude": 127.50376118673293,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 95,
+      "name": "화왕산",
+      "elevationMeters": 757.0,
+      "administrativeCode": "48740250",
+      "administrativeName": "창녕읍",
+      "representativePoint": {
+        "latitude": 35.54676623137845,
+        "longitude": 128.53252787704136,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 96,
+      "name": "황매산",
+      "elevationMeters": 1108.0,
+      "administrativeCode": "48860310",
+      "administrativeName": "차황면",
+      "representativePoint": {
+        "latitude": 35.49508851649305,
+        "longitude": 127.97438998833401,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 97,
+      "name": "황석산",
+      "elevationMeters": 1190.0,
+      "administrativeCode": "48870360",
+      "administrativeName": "안의면",
+      "representativePoint": {
+        "latitude": 35.655188384920955,
+        "longitude": 127.75542766325341,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 98,
+      "name": "황악산",
+      "elevationMeters": 1111.0,
+      "administrativeCode": "43740340",
+      "administrativeName": "매곡면",
+      "representativePoint": {
+        "latitude": 36.11829516174446,
+        "longitude": 127.96626085624351,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 99,
+      "name": "황장산",
+      "elevationMeters": 1077.0,
+      "administrativeCode": "47280350",
+      "administrativeName": "동로면",
+      "representativePoint": {
+        "latitude": 36.812523710373746,
+        "longitude": 128.27795653758324,
+        "epsg": 4326
+      }
+    },
+    {
+      "officialMountainID": 100,
+      "name": "희양산",
+      "elevationMeters": 999.0,
+      "administrativeCode": "43760330",
+      "administrativeName": "연풍면",
+      "representativePoint": {
+        "latitude": 36.71476280253933,
+        "longitude": 128.0046136501346,
+        "epsg": 4326
+      }
+    }
+  ]
+}

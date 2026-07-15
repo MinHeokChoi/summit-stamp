@@ -1,0 +1,1292 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		055E2467B3F604753EE96324 /* HikerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 236000A5C956D07A008518CA /* HikerDomain */; };
+		07488A49FEEE43FE9E75F828 /* HikerSocialFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */; };
+		09847478705ECB8C9F7ADEA9 /* GPSFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D93BE8EAD022488F25CC86E /* GPSFlowTests.swift */; };
+		13E7C1BAFEABC98BACB67310 /* HikerSocialFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */; };
+		1BD761DFCF4525E099731FBC /* SocialFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38005146E32F2904FE692084 /* SocialFeatureTests.swift */; };
+		1C368D0B17B7C9898D64AACB /* SocialFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8127E170204B774898CC0E4 /* SocialFeature.swift */; };
+		284695CC34D164E4C4E03194 /* HikerMapFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		401D2C2026E260650EFE8443 /* SocialAuthorizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E36F621B6C72D4ADFC1CCD /* SocialAuthorizationTests.swift */; };
+		44F5A25B7D72B40843A0C75A /* HikerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = FE95A28C4D80404EFDE8EB96 /* HikerDomain */; };
+		4891F6664BAB2141029FCFDF /* PassportFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD50EBDCB30CA95D0EA1E145 /* PassportFlowTests.swift */; };
+		57B95C5DE843E67B9B29E474 /* HikerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = AC3D9C4AEF60D48179C67DC7 /* HikerDomain */; };
+		591C2676D6A625DF393D7077 /* HikerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01294FB166597DC901D6C85 /* HikerApp.swift */; };
+		646B9A7729C40BADE349BD4D /* AuthenticationShellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37797EFE13B50A6BED5D9206 /* AuthenticationShellTests.swift */; };
+		736ACE6259496DC4A519FAD0 /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8AF14C292BAAF3037694C9 /* MapFeature.swift */; };
+		752F0DF0A8C2E0682AAD3006 /* HikerMapFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */; };
+		84061E07BB348CA7AB7F14E1 /* HikerObservability in Frameworks */ = {isa = PBXBuildFile; productRef = 18E7A7D2C159B5BF9E7F58CD /* HikerObservability */; };
+		85F49FB95CD676953293C0B9 /* HikerSocialFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		876CED5F2B199B48FBFCBE45 /* HikerDataset in Frameworks */ = {isa = PBXBuildFile; productRef = 0AC660DB87E1957A38D29070 /* HikerDataset */; };
+		8E27F0BCF2FD850F37A3E962 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45233F7B9E53A2666CA27C6 /* PerformanceTests.swift */; };
+		93DF4515D6BC280A2F672307 /* HikerPassportFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D144FC448DF5B11AC36A52FD /* HikerPassportFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9626CCDB3136936215462880 /* HikerPassportFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D144FC448DF5B11AC36A52FD /* HikerPassportFeature.framework */; };
+		9C9FC2B8F45193B199B9ECCE /* MapFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03973D8EB5F9C15437774425 /* MapFlowTests.swift */; };
+		9CAD4D8EA557BAB23B166BD4 /* HikerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 22A722B2D40DA58C7E320DBB /* HikerDomain */; };
+		9F3F6A124B973314FB5EF13A /* HikerData in Frameworks */ = {isa = PBXBuildFile; productRef = 6507131EF9DEA6AA8FE1221F /* HikerData */; };
+		A20CC0B0CAEBF93CE8196715 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00CA08624F73D777D60C704 /* AppContainer.swift */; };
+		A41DF8A02F1E475C26029AC6 /* AccessibilitySmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5436627255BDC230385C4112 /* AccessibilitySmokeTests.swift */; };
+		A4CCBDB0B1A4AE6051971A14 /* HikerLocation in Frameworks */ = {isa = PBXBuildFile; productRef = 5EB37044C51CE348F5E8F023 /* HikerLocation */; };
+		A65B8ED177A69EB101106C26 /* TargetGraphTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225F0CC5406A54276DA34BCE /* TargetGraphTests.swift */; };
+		BDB1FA49290F71E742945905 /* AuthenticationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72439C78F09C66A085CE7ECB /* AuthenticationCoordinatorTests.swift */; };
+		BE557F963D5D7C593B792106 /* M3SyncFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A031032B3D00C1BE711341A3 /* M3SyncFlowTests.swift */; };
+		C29044295DBF56BE9CA5E44C /* AuthenticationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F48B1457C97CD2114F5A131 /* AuthenticationCoordinator.swift */; };
+		C3656C2C5501B784C465CBCF /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BBDA0A983E64DCF8A00F12 /* RootView.swift */; };
+		CF90B5E1F47A26292829CE11 /* PassportFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CADA5187BCC49DB96749922 /* PassportFeature.swift */; };
+		D1AFDB134F863F30ABBD1AC6 /* HikerMapFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D371EF9AB880D0566B3843AB /* HikerMapFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */; };
+		D4F02B483FE3E4ADCC9C190A /* MapViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0439C02B9454ECF7537C66 /* MapViewModelTests.swift */; };
+		EA58D511B3CC4480CCB9EDEA /* HikerSocialFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB78E2AA710C2BB1B17B7A64 /* HikerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = DF565F48DD69625BA810F061 /* HikerDomain */; };
+		FC737D4BCD0DD3AB6DF9E31B /* HikerDataset in Frameworks */ = {isa = PBXBuildFile; productRef = 3E9A62E5CFF5CBA3C035CCC6 /* HikerDataset */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		22FD30F3F9ACFED2B40B0EA7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 912FC7E9D21F1D5043743E89;
+			remoteInfo = HikerApp;
+		};
+		3B35798CBA0E269AFF4938C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ED876CE6D16DC669CB85CE9D;
+			remoteInfo = HikerSocialFeature;
+		};
+		68370EEC9B13705AC056EC48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9AD52D52B9F9547ECAC7BA95;
+			remoteInfo = HikerMapFeature;
+		};
+		88F5DD0A6240B6D69FDE9A17 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1AFED0BDE857F8B03BE75D8;
+			remoteInfo = HikerPassportFeature;
+		};
+		92341B6744DCD23F9CAFEB71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9AD52D52B9F9547ECAC7BA95;
+			remoteInfo = HikerMapFeature;
+		};
+		A043A01EA7E657E366D70C6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 912FC7E9D21F1D5043743E89;
+			remoteInfo = HikerApp;
+		};
+		D42328786A9FE51E30068918 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ED876CE6D16DC669CB85CE9D;
+			remoteInfo = HikerSocialFeature;
+		};
+		F65DF600B88043517F3DC0CA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEEDF14EB82C9B49B01A8098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 912FC7E9D21F1D5043743E89;
+			remoteInfo = HikerApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B879EED322F62B98749B554E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				284695CC34D164E4C4E03194 /* HikerMapFeature.framework in Embed Frameworks */,
+				EA58D511B3CC4480CCB9EDEA /* HikerSocialFeature.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D077E71F81C94FD11BCE9E16 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D1AFDB134F863F30ABBD1AC6 /* HikerMapFeature.framework in Embed Frameworks */,
+				93DF4515D6BC280A2F672307 /* HikerPassportFeature.framework in Embed Frameworks */,
+				85F49FB95CD676953293C0B9 /* HikerSocialFeature.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		03973D8EB5F9C15437774425 /* MapFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFlowTests.swift; sourceTree = "<group>"; };
+		18A90D69F5C23D83831674E5 /* HikerFeaturesTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HikerFeaturesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F48B1457C97CD2114F5A131 /* AuthenticationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinator.swift; sourceTree = "<group>"; };
+		225F0CC5406A54276DA34BCE /* TargetGraphTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetGraphTests.swift; sourceTree = "<group>"; };
+		37797EFE13B50A6BED5D9206 /* AuthenticationShellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationShellTests.swift; sourceTree = "<group>"; };
+		37BBDA0A983E64DCF8A00F12 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		38005146E32F2904FE692084 /* SocialFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialFeatureTests.swift; sourceTree = "<group>"; };
+		3D8AF14C292BAAF3037694C9 /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
+		3E5DB8AB7C4CCD42D4796625 /* HikerObservability */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HikerObservability; path = Packages/HikerObservability; sourceTree = SOURCE_ROOT; };
+		4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HikerMapFeature.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5436627255BDC230385C4112 /* AccessibilitySmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilitySmokeTests.swift; sourceTree = "<group>"; };
+		57BAA510E3E667037E6FBD6E /* HikerDataset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HikerDataset; path = Packages/HikerDataset; sourceTree = SOURCE_ROOT; };
+		5CADA5187BCC49DB96749922 /* PassportFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportFeature.swift; sourceTree = "<group>"; };
+		61E36F621B6C72D4ADFC1CCD /* SocialAuthorizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialAuthorizationTests.swift; sourceTree = "<group>"; };
+		72439C78F09C66A085CE7ECB /* AuthenticationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinatorTests.swift; sourceTree = "<group>"; };
+		77BA9E8E3E7C9C166D343662 /* HikerArchitectureTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HikerArchitectureTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B0439C02B9454ECF7537C66 /* MapViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewModelTests.swift; sourceTree = "<group>"; };
+		8276CE260900357744C2BBEE /* HikerApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HikerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		99277190FB7AD872D94DA000 /* HikerData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HikerData; path = Packages/HikerData; sourceTree = SOURCE_ROOT; };
+		9D93BE8EAD022488F25CC86E /* GPSFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSFlowTests.swift; sourceTree = "<group>"; };
+		A031032B3D00C1BE711341A3 /* M3SyncFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3SyncFlowTests.swift; sourceTree = "<group>"; };
+		A60AB8341B7A26EAE0323249 /* HikerDomain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HikerDomain; path = Packages/HikerDomain; sourceTree = SOURCE_ROOT; };
+		B01294FB166597DC901D6C85 /* HikerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikerApp.swift; sourceTree = "<group>"; };
+		D144FC448DF5B11AC36A52FD /* HikerPassportFeature.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HikerPassportFeature.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7ADD01D8FC0EB4350D3F253 /* HikerLocation */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HikerLocation; path = Packages/HikerLocation; sourceTree = SOURCE_ROOT; };
+		D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HikerSocialFeature.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E45233F7B9E53A2666CA27C6 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
+		E8127E170204B774898CC0E4 /* SocialFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialFeature.swift; sourceTree = "<group>"; };
+		F00CA08624F73D777D60C704 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
+		F28DBF5205B5ABE1AF6CE7EC /* HikerPerformanceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HikerPerformanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD50EBDCB30CA95D0EA1E145 /* PassportFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportFlowTests.swift; sourceTree = "<group>"; };
+		FF2692E6BCD80888FF678BF2 /* HikerUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HikerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0C9FDCA0258DA36E2B6D35A2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9CAD4D8EA557BAB23B166BD4 /* HikerDomain in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		110C21C5AD6C2857A764302B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				752F0DF0A8C2E0682AAD3006 /* HikerMapFeature.framework in Frameworks */,
+				9626CCDB3136936215462880 /* HikerPassportFeature.framework in Frameworks */,
+				13E7C1BAFEABC98BACB67310 /* HikerSocialFeature.framework in Frameworks */,
+				44F5A25B7D72B40843A0C75A /* HikerDomain in Frameworks */,
+				9F3F6A124B973314FB5EF13A /* HikerData in Frameworks */,
+				876CED5F2B199B48FBFCBE45 /* HikerDataset in Frameworks */,
+				A4CCBDB0B1A4AE6051971A14 /* HikerLocation in Frameworks */,
+				84061E07BB348CA7AB7F14E1 /* HikerObservability in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6F5CA0F7563705B1A16911CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57B95C5DE843E67B9B29E474 /* HikerDomain in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A39036CC958C48F6562CFE6D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB78E2AA710C2BB1B17B7A64 /* HikerDomain in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FFB54F011BF22B4F80998D5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D371EF9AB880D0566B3843AB /* HikerMapFeature.framework in Frameworks */,
+				07488A49FEEE43FE9E75F828 /* HikerSocialFeature.framework in Frameworks */,
+				055E2467B3F604753EE96324 /* HikerDomain in Frameworks */,
+				FC737D4BCD0DD3AB6DF9E31B /* HikerDataset in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0E8FFA9820F7E2B39E863D62 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				99277190FB7AD872D94DA000 /* HikerData */,
+				57BAA510E3E667037E6FBD6E /* HikerDataset */,
+				A60AB8341B7A26EAE0323249 /* HikerDomain */,
+				D7ADD01D8FC0EB4350D3F253 /* HikerLocation */,
+				3E5DB8AB7C4CCD42D4796625 /* HikerObservability */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		3409C0766D4A3DCE889078F2 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				3D8AF14C292BAAF3037694C9 /* MapFeature.swift */,
+			);
+			name = Map;
+			path = Features/Map;
+			sourceTree = "<group>";
+		};
+		497E167D39EFCDC68D855CDE = {
+			isa = PBXGroup;
+			children = (
+				F99F863ADCE1FB1D01D97C89 /* App */,
+				F92E94B5D5EAA1FACD28FB5E /* Architecture */,
+				74DF5610ED6E8C0A44F6479B /* Features */,
+				3409C0766D4A3DCE889078F2 /* Map */,
+				0E8FFA9820F7E2B39E863D62 /* Packages */,
+				4DBD8FBE3FEC6F8453C9EFD1 /* Passport */,
+				DA67E61387B862E146D16D62 /* Performance */,
+				9945C241DB54E2C91E5457AA /* Social */,
+				BE35DE71998811CBCF5AE438 /* UI */,
+				B24E6F95672C47D5D12EAE63 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4DBD8FBE3FEC6F8453C9EFD1 /* Passport */ = {
+			isa = PBXGroup;
+			children = (
+				5CADA5187BCC49DB96749922 /* PassportFeature.swift */,
+			);
+			name = Passport;
+			path = Features/Passport;
+			sourceTree = "<group>";
+		};
+		74DF5610ED6E8C0A44F6479B /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A031032B3D00C1BE711341A3 /* M3SyncFlowTests.swift */,
+				7B0439C02B9454ECF7537C66 /* MapViewModelTests.swift */,
+				38005146E32F2904FE692084 /* SocialFeatureTests.swift */,
+			);
+			name = Features;
+			path = Tests/Features;
+			sourceTree = "<group>";
+		};
+		9945C241DB54E2C91E5457AA /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				E8127E170204B774898CC0E4 /* SocialFeature.swift */,
+			);
+			name = Social;
+			path = Features/Social;
+			sourceTree = "<group>";
+		};
+		B24E6F95672C47D5D12EAE63 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8276CE260900357744C2BBEE /* HikerApp.app */,
+				77BA9E8E3E7C9C166D343662 /* HikerArchitectureTests.xctest */,
+				18A90D69F5C23D83831674E5 /* HikerFeaturesTests.xctest */,
+				4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */,
+				D144FC448DF5B11AC36A52FD /* HikerPassportFeature.framework */,
+				F28DBF5205B5ABE1AF6CE7EC /* HikerPerformanceTests.xctest */,
+				D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */,
+				FF2692E6BCD80888FF678BF2 /* HikerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BE35DE71998811CBCF5AE438 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				5436627255BDC230385C4112 /* AccessibilitySmokeTests.swift */,
+				37797EFE13B50A6BED5D9206 /* AuthenticationShellTests.swift */,
+				9D93BE8EAD022488F25CC86E /* GPSFlowTests.swift */,
+				03973D8EB5F9C15437774425 /* MapFlowTests.swift */,
+				FD50EBDCB30CA95D0EA1E145 /* PassportFlowTests.swift */,
+				61E36F621B6C72D4ADFC1CCD /* SocialAuthorizationTests.swift */,
+			);
+			name = UI;
+			path = Tests/UI;
+			sourceTree = "<group>";
+		};
+		DA67E61387B862E146D16D62 /* Performance */ = {
+			isa = PBXGroup;
+			children = (
+				E45233F7B9E53A2666CA27C6 /* PerformanceTests.swift */,
+			);
+			name = Performance;
+			path = Tests/Performance;
+			sourceTree = "<group>";
+		};
+		F92E94B5D5EAA1FACD28FB5E /* Architecture */ = {
+			isa = PBXGroup;
+			children = (
+				72439C78F09C66A085CE7ECB /* AuthenticationCoordinatorTests.swift */,
+				225F0CC5406A54276DA34BCE /* TargetGraphTests.swift */,
+			);
+			name = Architecture;
+			path = Tests/Architecture;
+			sourceTree = "<group>";
+		};
+		F99F863ADCE1FB1D01D97C89 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F00CA08624F73D777D60C704 /* AppContainer.swift */,
+				1F48B1457C97CD2114F5A131 /* AuthenticationCoordinator.swift */,
+				B01294FB166597DC901D6C85 /* HikerApp.swift */,
+				37BBDA0A983E64DCF8A00F12 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00D8BCFC0833E79A8D249F42 /* HikerPerformanceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9F2F837A5CC0577994CCD307 /* Build configuration list for PBXNativeTarget "HikerPerformanceTests" */;
+			buildPhases = (
+				88C8BD76BF3AAC40C234DD2A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C6CF066E59AB4E0F2585C4BA /* PBXTargetDependency */,
+			);
+			name = HikerPerformanceTests;
+			packageProductDependencies = (
+			);
+			productName = HikerPerformanceTests;
+			productReference = F28DBF5205B5ABE1AF6CE7EC /* HikerPerformanceTests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		21AFD9E0E602EAFD23A50526 /* HikerArchitectureTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AD465C69FF08EDB55711A5C3 /* Build configuration list for PBXNativeTarget "HikerArchitectureTests" */;
+			buildPhases = (
+				D4534030559DEF5D1A601D93 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B547A2BF4A33BC397367BF22 /* PBXTargetDependency */,
+			);
+			name = HikerArchitectureTests;
+			packageProductDependencies = (
+			);
+			productName = HikerArchitectureTests;
+			productReference = 77BA9E8E3E7C9C166D343662 /* HikerArchitectureTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		7F11154A6E24316AAA39C4CF /* HikerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8A3879C1515526E003A2389E /* Build configuration list for PBXNativeTarget "HikerUITests" */;
+			buildPhases = (
+				CD7F3E37310EF5F40283BF77 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D6908F4DC158124C392CD7E /* PBXTargetDependency */,
+			);
+			name = HikerUITests;
+			packageProductDependencies = (
+			);
+			productName = HikerUITests;
+			productReference = FF2692E6BCD80888FF678BF2 /* HikerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		912FC7E9D21F1D5043743E89 /* HikerApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 02D9573D8A0805D3D63078A5 /* Build configuration list for PBXNativeTarget "HikerApp" */;
+			buildPhases = (
+				B1F1537086963710ACC91577 /* Sources */,
+				110C21C5AD6C2857A764302B /* Frameworks */,
+				D077E71F81C94FD11BCE9E16 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C8DF8FB6A69515F2FC3851CF /* PBXTargetDependency */,
+				22A23E0DBE94588407850685 /* PBXTargetDependency */,
+				E17E6AF296E96FAC079F3FF2 /* PBXTargetDependency */,
+			);
+			name = HikerApp;
+			packageProductDependencies = (
+				FE95A28C4D80404EFDE8EB96 /* HikerDomain */,
+				6507131EF9DEA6AA8FE1221F /* HikerData */,
+				0AC660DB87E1957A38D29070 /* HikerDataset */,
+				5EB37044C51CE348F5E8F023 /* HikerLocation */,
+				18E7A7D2C159B5BF9E7F58CD /* HikerObservability */,
+			);
+			productName = HikerApp;
+			productReference = 8276CE260900357744C2BBEE /* HikerApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9AD52D52B9F9547ECAC7BA95 /* HikerMapFeature */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 530C8731ACAD60DB1797BB6C /* Build configuration list for PBXNativeTarget "HikerMapFeature" */;
+			buildPhases = (
+				2C2A1ADE444FE5360718E071 /* Sources */,
+				6F5CA0F7563705B1A16911CC /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HikerMapFeature;
+			packageProductDependencies = (
+				AC3D9C4AEF60D48179C67DC7 /* HikerDomain */,
+			);
+			productName = HikerMapFeature;
+			productReference = 4C132620CBC7EA16725EAA47 /* HikerMapFeature.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		B1AFED0BDE857F8B03BE75D8 /* HikerPassportFeature */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7087A9F15B1B07E5BA4A81F /* Build configuration list for PBXNativeTarget "HikerPassportFeature" */;
+			buildPhases = (
+				D0F427E5632FCE3641C1D0F4 /* Sources */,
+				A39036CC958C48F6562CFE6D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HikerPassportFeature;
+			packageProductDependencies = (
+				DF565F48DD69625BA810F061 /* HikerDomain */,
+			);
+			productName = HikerPassportFeature;
+			productReference = D144FC448DF5B11AC36A52FD /* HikerPassportFeature.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		BC488B539C53910556B85034 /* HikerFeaturesTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DD1882F9651DBBAB684C3D2 /* Build configuration list for PBXNativeTarget "HikerFeaturesTests" */;
+			buildPhases = (
+				9B7B3DC3AF967A608EFCA706 /* Sources */,
+				FFB54F011BF22B4F80998D5E /* Frameworks */,
+				B879EED322F62B98749B554E /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D8E73EB0AF17EB7A593ADD55 /* PBXTargetDependency */,
+				DE1B862653E3A3EDC778D1F1 /* PBXTargetDependency */,
+			);
+			name = HikerFeaturesTests;
+			packageProductDependencies = (
+				236000A5C956D07A008518CA /* HikerDomain */,
+				3E9A62E5CFF5CBA3C035CCC6 /* HikerDataset */,
+			);
+			productName = HikerFeaturesTests;
+			productReference = 18A90D69F5C23D83831674E5 /* HikerFeaturesTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		ED876CE6D16DC669CB85CE9D /* HikerSocialFeature */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 222475F522316892441E1F49 /* Build configuration list for PBXNativeTarget "HikerSocialFeature" */;
+			buildPhases = (
+				E8EDE6E4A7A8EE7A0B4B6F41 /* Sources */,
+				0C9FDCA0258DA36E2B6D35A2 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HikerSocialFeature;
+			packageProductDependencies = (
+				22A722B2D40DA58C7E320DBB /* HikerDomain */,
+			);
+			productName = HikerSocialFeature;
+			productReference = D7EFA1A5B0E04400B5BE32C3 /* HikerSocialFeature.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DEEDF14EB82C9B49B01A8098 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					00D8BCFC0833E79A8D249F42 = {
+						TestTargetID = 912FC7E9D21F1D5043743E89;
+					};
+					7F11154A6E24316AAA39C4CF = {
+						TestTargetID = 912FC7E9D21F1D5043743E89;
+					};
+				};
+			};
+			buildConfigurationList = 75A6DB25F0247144E25880A8 /* Build configuration list for PBXProject "Hiker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 497E167D39EFCDC68D855CDE;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BA56B0EF50D055736AAC2420 /* XCLocalSwiftPackageReference "Packages/HikerData" */,
+				1CBE28FB9BE6E1D9F4504B48 /* XCLocalSwiftPackageReference "Packages/HikerDataset" */,
+				763B4EACCFD32FCD829AE541 /* XCLocalSwiftPackageReference "Packages/HikerDomain" */,
+				A99EDBA3C0948AA76AC9CD45 /* XCLocalSwiftPackageReference "Packages/HikerLocation" */,
+				F9AC1DFFB1EF2B372FF8FB59 /* XCLocalSwiftPackageReference "Packages/HikerObservability" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B24E6F95672C47D5D12EAE63 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				912FC7E9D21F1D5043743E89 /* HikerApp */,
+				21AFD9E0E602EAFD23A50526 /* HikerArchitectureTests */,
+				BC488B539C53910556B85034 /* HikerFeaturesTests */,
+				9AD52D52B9F9547ECAC7BA95 /* HikerMapFeature */,
+				B1AFED0BDE857F8B03BE75D8 /* HikerPassportFeature */,
+				00D8BCFC0833E79A8D249F42 /* HikerPerformanceTests */,
+				ED876CE6D16DC669CB85CE9D /* HikerSocialFeature */,
+				7F11154A6E24316AAA39C4CF /* HikerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2C2A1ADE444FE5360718E071 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				736ACE6259496DC4A519FAD0 /* MapFeature.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		88C8BD76BF3AAC40C234DD2A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E27F0BCF2FD850F37A3E962 /* PerformanceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B7B3DC3AF967A608EFCA706 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE557F963D5D7C593B792106 /* M3SyncFlowTests.swift in Sources */,
+				D4F02B483FE3E4ADCC9C190A /* MapViewModelTests.swift in Sources */,
+				1BD761DFCF4525E099731FBC /* SocialFeatureTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1F1537086963710ACC91577 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20CC0B0CAEBF93CE8196715 /* AppContainer.swift in Sources */,
+				C29044295DBF56BE9CA5E44C /* AuthenticationCoordinator.swift in Sources */,
+				591C2676D6A625DF393D7077 /* HikerApp.swift in Sources */,
+				C3656C2C5501B784C465CBCF /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CD7F3E37310EF5F40283BF77 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A41DF8A02F1E475C26029AC6 /* AccessibilitySmokeTests.swift in Sources */,
+				646B9A7729C40BADE349BD4D /* AuthenticationShellTests.swift in Sources */,
+				09847478705ECB8C9F7ADEA9 /* GPSFlowTests.swift in Sources */,
+				9C9FC2B8F45193B199B9ECCE /* MapFlowTests.swift in Sources */,
+				4891F6664BAB2141029FCFDF /* PassportFlowTests.swift in Sources */,
+				401D2C2026E260650EFE8443 /* SocialAuthorizationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0F427E5632FCE3641C1D0F4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF90B5E1F47A26292829CE11 /* PassportFeature.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4534030559DEF5D1A601D93 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDB1FA49290F71E742945905 /* AuthenticationCoordinatorTests.swift in Sources */,
+				A65B8ED177A69EB101106C26 /* TargetGraphTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E8EDE6E4A7A8EE7A0B4B6F41 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1C368D0B17B7C9898D64AACB /* SocialFeature.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		22A23E0DBE94588407850685 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B1AFED0BDE857F8B03BE75D8 /* HikerPassportFeature */;
+			targetProxy = 88F5DD0A6240B6D69FDE9A17 /* PBXContainerItemProxy */;
+		};
+		8D6908F4DC158124C392CD7E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 912FC7E9D21F1D5043743E89 /* HikerApp */;
+			targetProxy = F65DF600B88043517F3DC0CA /* PBXContainerItemProxy */;
+		};
+		B547A2BF4A33BC397367BF22 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 912FC7E9D21F1D5043743E89 /* HikerApp */;
+			targetProxy = 22FD30F3F9ACFED2B40B0EA7 /* PBXContainerItemProxy */;
+		};
+		C6CF066E59AB4E0F2585C4BA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 912FC7E9D21F1D5043743E89 /* HikerApp */;
+			targetProxy = A043A01EA7E657E366D70C6F /* PBXContainerItemProxy */;
+		};
+		C8DF8FB6A69515F2FC3851CF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9AD52D52B9F9547ECAC7BA95 /* HikerMapFeature */;
+			targetProxy = 92341B6744DCD23F9CAFEB71 /* PBXContainerItemProxy */;
+		};
+		D8E73EB0AF17EB7A593ADD55 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9AD52D52B9F9547ECAC7BA95 /* HikerMapFeature */;
+			targetProxy = 68370EEC9B13705AC056EC48 /* PBXContainerItemProxy */;
+		};
+		DE1B862653E3A3EDC778D1F1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ED876CE6D16DC669CB85CE9D /* HikerSocialFeature */;
+			targetProxy = D42328786A9FE51E30068918 /* PBXContainerItemProxy */;
+		};
+		E17E6AF296E96FAC079F3FF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ED876CE6D16DC669CB85CE9D /* HikerSocialFeature */;
+			targetProxy = 3B35798CBA0E269AFF4938C2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0AF341BCF56CD97B64B9D125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.performance;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HikerApp;
+			};
+			name = Release;
+		};
+		0B85246E36889CC001AC4F5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.features;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1C9E8FE98F8C0142686F3A59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.social;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		233A3BE4388FB7E3EF387905 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.passport;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		27F237E7E194C6DF028E9D89 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.architecture;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HikerApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HikerApp";
+			};
+			name = Debug;
+		};
+		4A6BD0AE18530DE9CC1D0AB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.ui;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HikerApp;
+			};
+			name = Release;
+		};
+		53B700E70192DFDF96D895DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.map;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		74A94382F93F4BED2DE6516F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.performance;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HikerApp;
+			};
+			name = Debug;
+		};
+		80C21AD35E8DAEC7129CA930 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/HikerApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8DB7AF6B3AFCCBFC7639F7DC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.social;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		93BB3F2E32B58091D4C51D83 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.passport;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		9555CE58B914516DC378C545 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/HikerApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9DB4F971E79949561B303954 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.architecture;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HikerApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HikerApp";
+			};
+			name = Release;
+		};
+		C31A5341AE246870A037D86B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.ui;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HikerApp;
+			};
+			name = Debug;
+		};
+		D51C2978FE8B97A5BAD5644F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.tests.features;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EC34D16F4D0ACBB9B8AF1552 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				EXTRACT_APP_INTENTS_METADATA = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F69ED6A80D6A4B9889355F89 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXTRACT_APP_INTENTS_METADATA = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		FF17B245B489208AF9915B0C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.hiker.feature.map;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		02D9573D8A0805D3D63078A5 /* Build configuration list for PBXNativeTarget "HikerApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9555CE58B914516DC378C545 /* Debug */,
+				80C21AD35E8DAEC7129CA930 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		222475F522316892441E1F49 /* Build configuration list for PBXNativeTarget "HikerSocialFeature" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C9E8FE98F8C0142686F3A59 /* Debug */,
+				8DB7AF6B3AFCCBFC7639F7DC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		530C8731ACAD60DB1797BB6C /* Build configuration list for PBXNativeTarget "HikerMapFeature" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				53B700E70192DFDF96D895DD /* Debug */,
+				FF17B245B489208AF9915B0C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		75A6DB25F0247144E25880A8 /* Build configuration list for PBXProject "Hiker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC34D16F4D0ACBB9B8AF1552 /* Debug */,
+				F69ED6A80D6A4B9889355F89 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8A3879C1515526E003A2389E /* Build configuration list for PBXNativeTarget "HikerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C31A5341AE246870A037D86B /* Debug */,
+				4A6BD0AE18530DE9CC1D0AB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DD1882F9651DBBAB684C3D2 /* Build configuration list for PBXNativeTarget "HikerFeaturesTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B85246E36889CC001AC4F5D /* Debug */,
+				D51C2978FE8B97A5BAD5644F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9F2F837A5CC0577994CCD307 /* Build configuration list for PBXNativeTarget "HikerPerformanceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74A94382F93F4BED2DE6516F /* Debug */,
+				0AF341BCF56CD97B64B9D125 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AD465C69FF08EDB55711A5C3 /* Build configuration list for PBXNativeTarget "HikerArchitectureTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27F237E7E194C6DF028E9D89 /* Debug */,
+				9DB4F971E79949561B303954 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D7087A9F15B1B07E5BA4A81F /* Build configuration list for PBXNativeTarget "HikerPassportFeature" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				233A3BE4388FB7E3EF387905 /* Debug */,
+				93BB3F2E32B58091D4C51D83 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		1CBE28FB9BE6E1D9F4504B48 /* XCLocalSwiftPackageReference "Packages/HikerDataset" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HikerDataset;
+		};
+		763B4EACCFD32FCD829AE541 /* XCLocalSwiftPackageReference "Packages/HikerDomain" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HikerDomain;
+		};
+		A99EDBA3C0948AA76AC9CD45 /* XCLocalSwiftPackageReference "Packages/HikerLocation" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HikerLocation;
+		};
+		BA56B0EF50D055736AAC2420 /* XCLocalSwiftPackageReference "Packages/HikerData" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HikerData;
+		};
+		F9AC1DFFB1EF2B372FF8FB59 /* XCLocalSwiftPackageReference "Packages/HikerObservability" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HikerObservability;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0AC660DB87E1957A38D29070 /* HikerDataset */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDataset;
+		};
+		18E7A7D2C159B5BF9E7F58CD /* HikerObservability */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerObservability;
+		};
+		22A722B2D40DA58C7E320DBB /* HikerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDomain;
+		};
+		236000A5C956D07A008518CA /* HikerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDomain;
+		};
+		3E9A62E5CFF5CBA3C035CCC6 /* HikerDataset */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDataset;
+		};
+		5EB37044C51CE348F5E8F023 /* HikerLocation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerLocation;
+		};
+		6507131EF9DEA6AA8FE1221F /* HikerData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerData;
+		};
+		AC3D9C4AEF60D48179C67DC7 /* HikerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDomain;
+		};
+		DF565F48DD69625BA810F061 /* HikerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDomain;
+		};
+		FE95A28C4D80404EFDE8EB96 /* HikerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HikerDomain;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = DEEDF14EB82C9B49B01A8098 /* Project object */;
+}

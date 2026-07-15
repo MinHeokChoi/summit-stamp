@@ -1,0 +1,9 @@
+# Development and CI-compatible command-line toolchain.
+# Xcode 26.5 and its Swift 6.3.2 toolchain are selected by the system through
+# DEVELOPER_DIR in CI or xcode-select locally. They are intentionally not
+# listed here because mise does not install or select the system Xcode toolchain.
+[tools]
+xcodegen = "2.45.4"
+supabase = "2.109.1"
+postgres = "15.8"
+pgtap = "1.3.0"

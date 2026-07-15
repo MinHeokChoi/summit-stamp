@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Install this exact helper as root:root, mode 0755, at
+# /usr/local/bin/hiker-release-rpc. The controller accepts no other command.
+set -euo pipefail
+
+# `read-back` returns status 3 with no stdout only when no exact fully-bound
+# operation key exists; every other response is the fixed transport's result.
+if (( $# != 28 )) || [[
+    "$1" != "--operation" || ( "$2" != "append" && "$2" != "read-back" ) ||
+    "$3" != "--operation-key" || ! "$4" =~ ^[a-f0-9]{64}$ ||
+    "$5" != "--release-id" || "$7" != "--state" || "$9" != "--tag" ||
+    "$11" != "--commit" || "$13" != "--switch-state" ||
+    "$15" != "--expected-sequence" || "$17" != "--expected-event-sha" ||
+    "$19" != "--approval-sha" || "$21" != "--observed-input-sha" ||
+    "$23" != "--data-sha" || "$25" != "--migration-sha" || "$27" != "--actor"
+]]; then
+    printf '%s\n' 'hiker release RPC arguments rejected' >&2
+    exit 64
+fi
+
+# This is the only transport target. Do not add environment-selected commands,
+# eval, a shell string, or any fallback transport.
+exec /usr/local/bin/hiker-append-release-transition "$@"

@@ -1,0 +1,2811 @@
+name: Release Evidence
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_gate:
+        description: Select one evidence gate; protected gates require explicit confirmation.
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - readiness
+          - m2a-auth-shell
+          - migration-predeploy
+          - compat-synthetics
+          - internal-alpha
+          - threshold-ratification
+          - external-beta
+          - metadata-review
+          - pitr-drill
+          - kill-switch-drill
+          - rc-auth-server
+          - rc-auth-archive
+          - rc-auth-aggregate
+          - performance
+          - rc-freeze
+          - alert-drill
+          - evidence-disposition
+          - m6-exit
+          - rollout-1pct
+          - rollout-review-05
+          - rollout-phase-05
+          - rollout-review-25
+          - rollout-phase-25
+          - rollout-review-50
+          - rollout-phase-50
+          - rollout-review-100
+          - rollout-phase-100
+          - rollback-tabletop
+          - incident-comms
+          - postrelease-review
+          - contract-remove-old
+          - publish-protected-source
+      confirm_protected_gate:
+        description: Confirm that the selected protected gate has its required immutable inputs.
+        required: true
+        default: false
+        type: boolean
+      predecessor_artifacts:
+        description: Canonical JSON array of protected predecessor gate/run/artifact/digest attestations.
+        required: false
+        default: ''
+        type: string
+      protected_source_artifacts:
+        description: Canonical JSON array of signed protected source run/artifact/digest attestations for the selected gate.
+        required: false
+        default: '[]'
+        type: string
+      m6_exit_sha256:
+        description: Exact SHA-256 of the immutable M6-EXIT admission required by every M7 gate.
+        required: false
+        default: ''
+        type: string
+      protected_source_target_gate:
+        description: Consumer gate that will use the signed protected observation.
+        required: false
+        default: ''
+        type: string
+      protected_source_observations:
+        description: Canonical redacted observations JSON for protected signing.
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+env:
+  RELEASE_PROTECTED_INPUTS_CONFIRMED: approved
+  HIKER_RELEASE_BUILD_DIGEST: ${{ vars.HIKER_RELEASE_BUILD_DIGEST }}
+  HIKER_RELEASE_INPUT_SHA256: ${{ vars.HIKER_RELEASE_INPUT_SHA256 }}
+  HIKER_RELEASE_ID: ${{ vars.HIKER_RELEASE_ID }}
+  HIKER_RELEASE_PREVIOUS_EVENT_SHA: ${{ vars.HIKER_RELEASE_PREVIOUS_EVENT_SHA }}
+  HIKER_RELEASE_APPROVAL_SHA: ${{ vars.HIKER_RELEASE_APPROVAL_SHA }}
+  HIKER_RELEASE_OBSERVED_INPUT_SHA: ${{ vars.HIKER_RELEASE_OBSERVED_INPUT_SHA }}
+  HIKER_RELEASE_DATASET_SHA: ${{ vars.HIKER_RELEASE_DATASET_SHA }}
+  HIKER_RELEASE_MIGRATION_SHA: ${{ vars.HIKER_RELEASE_MIGRATION_SHA }}
+  HIKER_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_RELEASE_TAG_SIGNING_FINGERPRINT }}
+  HIKER_RELEASE_RC_MANIFEST_SHA: ${{ vars.HIKER_RELEASE_RC_MANIFEST_SHA }}
+  HIKER_RELEASE_M6_EXIT_SHA: ${{ inputs.m6_exit_sha256 }}
+  HIKER_RELEASE_PROTECTED_SOURCE_RECEIPT_PATH: ${{ runner.temp }}/release-protected-source-receipt.json
+
+concurrency:
+  group: release-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-protected-source:
+    name: publish-protected-source
+    needs: release-tag-admission
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'publish-protected-source' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: release-source-publisher
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Collect threshold role approval
+        if: inputs.protected_source_target_gate == 'threshold-ratification'
+        env:
+          RELEASE_PROTECTED_ENVIRONMENT: production
+          RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+          RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+          RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+          RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+          RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+          RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+          RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+        run: >-
+          Scripts/release/collect-role-approvals.sh
+          --gate threshold
+          --issue-url "${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}"
+          --tag "$GITHUB_REF_NAME"
+          --commit "$GITHUB_SHA"
+          --manifest-sha "$HIKER_RELEASE_OBSERVED_INPUT_SHA"
+          --transition threshold-ratification
+          --metric-sha "$HIKER_RELEASE_PREVIOUS_EVENT_SHA"
+          --output Evidence/runtime/approvals/threshold.json
+      - id: source
+        name: Canonicalize and sign protected observation
+        env:
+          TARGET_GATE: ${{ inputs.protected_source_target_gate }}
+          OBSERVATIONS_JSON: ${{ inputs.protected_source_observations }}
+          OBSERVATION_SOURCE_SIGNING_KEY_BASE64: ${{ secrets.HIKER_RELEASE_OBSERVATION_SIGNING_KEY_BASE64 }}
+          THRESHOLD_SOURCE_SIGNING_KEY_BASE64: ${{ secrets.HIKER_RELEASE_THRESHOLD_SIGNING_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import importlib.util
+          import json
+          import os
+          import sys
+          import subprocess
+          import shutil
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          root = Path.cwd()
+          script = root / "Scripts/ci/run-runtime-evidence.py"
+          spec = importlib.util.spec_from_file_location("release_runtime", script)
+          if spec is None or spec.loader is None:
+              raise SystemExit("release runtime validator is unavailable")
+          module = importlib.util.module_from_spec(spec)
+          sys.modules[spec.name] = module
+          spec.loader.exec_module(module)
+
+          gate = os.environ.get("TARGET_GATE", "")
+          floor_contracts = {
+              "external-beta": {"evidenceId": "REL-005", "artifactBase": "external-beta-observation", "documentName": "observed-beta.json", "signatureName": "observed-beta.sig"},
+              "rollout-review-05": {"evidenceId": "REL-011-05", "artifactBase": "rollout-review-05-observation", "documentName": "observed-phase-05.json", "signatureName": "observed-phase-05.sig"},
+              "rollout-review-25": {"evidenceId": "REL-011-25", "artifactBase": "rollout-review-25-observation", "documentName": "observed-phase-25.json", "signatureName": "observed-phase-25.sig"},
+              "rollout-review-50": {"evidenceId": "REL-011-50", "artifactBase": "rollout-review-50-observation", "documentName": "observed-phase-50.json", "signatureName": "observed-phase-50.sig"},
+              "rollout-review-100": {"evidenceId": "REL-011-100", "artifactBase": "rollout-review-100-observation", "documentName": "observed-phase-100.json", "signatureName": "observed-phase-100.sig"},
+          }
+          contract = module.RELEASE_PROTECTED_SOURCE_CONTRACTS.get(gate) or floor_contracts.get(gate)
+          if contract is None:
+              raise SystemExit("protected source target gate is invalid")
+          evidence_id = contract["evidenceId"]
+          floor_source = gate in floor_contracts
+          try:
+              observations = json.loads(os.environ.get("OBSERVATIONS_JSON", ""), object_pairs_hook=module.reject_duplicate_object)
+          except (UnicodeError, json.JSONDecodeError):
+              raise SystemExit("protected observations are invalid")
+          if evidence_id != "OPS-005" and not floor_source:
+              module.validate_release_observations(evidence_id, observations)
+          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "")
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          commit = os.environ.get("GITHUB_SHA", "")
+          build_digest = os.environ.get("HIKER_RELEASE_BUILD_DIGEST", "")
+          input_sha = os.environ.get("HIKER_RELEASE_INPUT_SHA256", "")
+          if (
+              module.REPOSITORY_RE.fullmatch(repository) is None
+              or module.RUN_ID_RE.fullmatch(run_id) is None
+              or module.RELEASE_TAG_RE.fullmatch(tag) is None
+              or module.SHA1_RE.fullmatch(commit) is None
+              or module.SHA256_RE.fullmatch(build_digest) is None
+              or module.SHA256_RE.fullmatch(input_sha) is None
+          ):
+              raise SystemExit("protected source publisher context is invalid")
+          if floor_source:
+              if (
+                  not isinstance(observations, dict)
+                  or observations.get("schemaVersion") != 1
+                  or observations.get("artifactType") != "runtime-floor-source"
+                  or observations.get("id") != evidence_id
+                  or observations.get("tag") != tag
+                  or observations.get("commit") != commit
+              ):
+                  raise SystemExit("runtime floor source is invalid")
+              document = observations
+          elif evidence_id == "OPS-005":
+              approval_path = Path("Evidence/runtime/approvals/threshold.json")
+              approval_sidecar = Path(f"{approval_path}.sha256")
+              approval_payload = approval_path.read_bytes()
+              approval_digest = hashlib.sha256(approval_payload).hexdigest()
+              if approval_sidecar.read_bytes() != f"{approval_digest}  {approval_path.as_posix()}\n".encode("ascii"):
+                  raise SystemExit("threshold approval sidecar is invalid")
+              shutil.copyfile(approval_path, Path(os.environ["RUNNER_TEMP"], "threshold-approval.json"))
+              shutil.copyfile(approval_sidecar, Path(os.environ["RUNNER_TEMP"], "threshold-approval.json.sha256"))
+              if (
+                  not isinstance(observations, dict)
+                  or set(observations) != {"thresholds"}
+                  or not isinstance(observations["thresholds"], dict)
+                  or not observations["thresholds"]
+              ):
+                  raise SystemExit("threshold ratification source is invalid")
+              document = {
+                  "schemaVersion": 1,
+                  "artifactType": "threshold-ratification",
+                  "id": "OPS-005",
+                  "tag": tag,
+                  "commit": commit,
+                  "approvalSHA256": approval_digest,
+                  "createdAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                  "thresholds": observations["thresholds"],
+              }
+          else:
+              document = {
+                  "schemaVersion": 1,
+                  "artifactType": "release-live-observation",
+                  "signatureAlgorithm": "ed25519",
+                  "id": evidence_id,
+                  "checkKind": module.RELEASE_EVIDENCE_CONTRACTS[evidence_id]["checkKind"],
+                  "repository": repository,
+                  "releaseTag": tag,
+                  "commitSHA": commit,
+                  "buildDigest": build_digest,
+                  "inputSHA256": input_sha,
+                  "workflowRunId": run_id,
+                  "job": "publish-protected-source",
+                  "observedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                  "observations": observations,
+              }
+          payload = module.canonical_bytes(document) + b"\n"
+          runner_temp = Path(os.environ["RUNNER_TEMP"])
+          document_path = runner_temp / contract["documentName"]
+          signature_path = runner_temp / contract["signatureName"]
+          key_path = runner_temp / "release-observation-signing-key.pem"
+          document_path.write_bytes(payload)
+          try:
+              signing_key_environment = (
+                  "THRESHOLD_SOURCE_SIGNING_KEY_BASE64"
+                  if gate == "threshold-ratification"
+                  else "OBSERVATION_SOURCE_SIGNING_KEY_BASE64"
+              )
+              key_payload = base64.b64decode(os.environ.get(signing_key_environment, ""), validate=True)
+          except ValueError:
+              raise SystemExit("protected source signing key is invalid")
+          if not key_payload:
+              raise SystemExit("protected source signing key is unavailable")
+          key_path.write_bytes(key_payload)
+          key_path.chmod(0o600)
+          result = subprocess.run(
+              [
+                  "openssl", "pkeyutl", "-sign", "-rawin",
+                  "-inkey", str(key_path), "-in", str(document_path), "-out", str(signature_path),
+              ],
+              check=False,
+              stdin=subprocess.DEVNULL,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              timeout=30,
+          )
+          key_path.unlink()
+          if result.returncode != 0 or not signature_path.is_file() or signature_path.stat().st_size <= 0:
+              raise SystemExit("protected source signing failed")
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as stream:
+              stream.write(f"artifact_name={contract['artifactBase']}-{commit}\n")
+              stream.write(f"document_path={document_path}\n")
+              stream.write(f"signature_path={signature_path}\n")
+              stream.write(f"document_sha256={hashlib.sha256(payload).hexdigest()}\n")
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "${{ steps.source.outputs.artifact_name }}"
+          path: |
+            ${{ steps.source.outputs.document_path }}
+            ${{ steps.source.outputs.signature_path }}
+            ${{ runner.temp }}/threshold-approval.json
+            ${{ runner.temp }}/threshold-approval.json.sha256
+          if-no-files-found: error
+          retention-days: 90
+  release-tag-admission:
+    name: release-tag-admission
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.release_gate != 'none' &&
+      inputs.release_gate != 'm2a-auth-shell')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out signed tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify tag identity and signature
+        run: Scripts/release/verify-release-tag.sh --tag "$GITHUB_REF_NAME" --commit "$GITHUB_SHA"
+
+  protected-predecessor:
+    name: protected-predecessor
+    needs: release-tag-admission
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.release_gate != 'none' &&
+      inputs.release_gate != 'm2a-auth-shell' &&
+      inputs.release_gate != 'publish-protected-source' &&
+      inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Retrieve and attest protected predecessor evidence
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_GATE: ${{ inputs.release_gate }}
+          RELEASE_PREDECESSOR_ARTIFACTS: ${{ inputs.predecessor_artifacts }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/protected-predecessor" <<'PY'
+          import hashlib
+          import io
+          import json
+          import shutil
+          import os
+          import re
+          import stat
+          import sys
+          import tempfile
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          import zipfile
+          from pathlib import Path, PurePosixPath
+
+          SHA256 = re.compile(r"^[a-f0-9]{64}$")
+          RUN_ID = re.compile(r"^[1-9][0-9]{0,19}$")
+          GATE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
+          expected_predecessors = {
+              "readiness": ("m2a-auth-shell",),
+              "migration-predeploy": ("readiness",),
+              "compat-synthetics": ("migration-predeploy",),
+              "internal-alpha": ("compat-synthetics",),
+              "threshold-ratification": ("internal-alpha",),
+              "external-beta": ("threshold-ratification",),
+              "metadata-review": ("external-beta",),
+              "pitr-drill": ("compat-synthetics",),
+              "kill-switch-drill": ("pitr-drill",),
+              "rc-auth-server": ("external-beta", "metadata-review", "pitr-drill"),
+              "rc-auth-archive": ("rc-auth-server",),
+              "rc-auth-aggregate": ("rc-auth-server", "rc-auth-archive"),
+              "performance": ("rc-auth-aggregate",),
+              "rc-freeze": ("readiness", "metadata-review", "pitr-drill", "kill-switch-drill", "threshold-ratification", "rc-auth-aggregate", "performance"),
+              "alert-drill": ("rc-freeze",),
+              "evidence-disposition": ("rc-freeze",),
+              "m6-exit": ("rc-freeze", "alert-drill", "evidence-disposition"),
+              "rollout-1pct": ("m6-exit",),
+              "rollout-review-05": ("rollout-1pct",),
+              "rollout-phase-05": ("rollout-review-05",),
+              "rollout-review-25": ("rollout-phase-05",),
+              "rollout-phase-25": ("rollout-review-25",),
+              "rollout-review-50": ("rollout-phase-25",),
+              "rollout-phase-50": ("rollout-review-50",),
+              "rollout-review-100": ("rollout-phase-50",),
+              "rollout-phase-100": ("rollout-review-100",),
+              "rollback-tabletop": ("rollout-phase-100",),
+              "incident-comms": ("rollback-tabletop",),
+              "postrelease-review": ("rollout-phase-100", "incident-comms"),
+              "contract-remove-old": ("postrelease-review",),
+          }
+
+          class Failure(Exception):
+              pass
+
+          def fail(message):
+              raise Failure(message)
+
+          def reject_duplicates(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      fail("duplicate JSON member")
+                  result[key] = value
+              return result
+
+          def canonical(value):
+              return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii") + b"\n"
+
+          def parse(raw):
+              try:
+                  return json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=reject_duplicates)
+              except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+                  fail("protected predecessor JSON is invalid")
+
+          def request_json(path):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repository}/{path}",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      raw = response.read(2 * 1024 * 1024 + 1)
+                      if response.status != 200 or len(raw) > 2 * 1024 * 1024:
+                          fail("protected predecessor API response is invalid")
+              except (OSError, urllib.error.HTTPError) as error:
+                  fail("protected predecessor API request failed")
+              return parse(raw)
+
+          def download(url, destination):
+              request = urllib.request.Request(
+                  url,
+                  headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}"},
+              )
+              total = 0
+              try:
+                  with urllib.request.urlopen(request, timeout=60) as response, destination.open("xb") as output:
+                      if response.status != 200:
+                          fail("protected predecessor artifact download failed")
+                      while True:
+                          chunk = response.read(1024 * 1024)
+                          if not chunk:
+                              break
+                          total += len(chunk)
+                          if total > 512 * 1024 * 1024:
+                              fail("protected predecessor artifact is too large")
+                          output.write(chunk)
+              except (OSError, urllib.error.HTTPError) as error:
+                  fail("protected predecessor artifact download failed")
+              if total == 0:
+                  fail("protected predecessor artifact is empty")
+
+          def safe_extract(archive, destination):
+              names = set()
+              total = 0
+              try:
+                  with zipfile.ZipFile(archive) as bundle:
+                      for entry in bundle.infolist():
+                          name = entry.filename
+                          path = PurePosixPath(name)
+                          if (
+                              not name
+                              or name in names
+                              or path.is_absolute()
+                              or ".." in path.parts
+                              or "\\" in name
+                              or stat.S_IFMT(entry.external_attr >> 16) == stat.S_IFLNK
+                          ):
+                              fail("protected predecessor archive is unsafe")
+                          names.add(name)
+                          if entry.is_dir():
+                              continue
+                          if name != "release-lineage-channel.json" and not name.startswith("Evidence/"):
+                              fail("protected predecessor archive contains an unexpected path")
+                          total += entry.file_size
+                          if entry.file_size > 256 * 1024 * 1024 or total > 512 * 1024 * 1024:
+                              fail("protected predecessor archive is too large")
+                          target = destination.joinpath(*path.parts)
+                          target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                          with bundle.open(entry) as source, target.open("xb") as output:
+                              while True:
+                                  chunk = source.read(1024 * 1024)
+                                  if not chunk:
+                                      break
+                                  output.write(chunk)
+              except (OSError, zipfile.BadZipFile) as error:
+                  fail("protected predecessor archive is invalid")
+
+          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          token = os.environ.get("GITHUB_TOKEN", "")
+          gate = os.environ.get("RELEASE_GATE", "")
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          commit = os.environ.get("GITHUB_SHA", "")
+          current_run = os.environ.get("GITHUB_RUN_ID", "")
+          raw_inputs = os.environ.get("RELEASE_PREDECESSOR_ARTIFACTS", "")
+          if (
+              not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+              or not token
+              or gate not in expected_predecessors
+              or not RUN_ID.fullmatch(current_run)
+              or not re.fullmatch(r"v[0-9][A-Za-z0-9.+-]*", tag)
+              or not re.fullmatch(r"[a-f0-9]{40}(?:[a-f0-9]{24})?", commit)
+              or os.environ.get("GITHUB_REF_TYPE") != "tag"
+          ):
+              fail("protected predecessor context is invalid")
+          inputs = parse(raw_inputs.encode("utf-8", "strict"))
+          if not isinstance(inputs, list) or len(inputs) != len(expected_predecessors[gate]):
+              fail("protected predecessor input set is incomplete")
+          expected_name = f"release-lineage-{commit}"
+          attestations = []
+          seen_gates = set()
+          seen_runs = set()
+          stage = Path(sys.argv[1])
+          stage.mkdir(mode=0o700, parents=True, exist_ok=False)
+          merged = stage / "Evidence"
+          sources = stage / "sources"
+          sources.mkdir(mode=0o700)
+          for entry, expected_gate in zip(inputs, expected_predecessors[gate], strict=True):
+              if not isinstance(entry, dict) or set(entry) != {"gate", "runId", "artifactName", "artifactDigest"}:
+                  fail("protected predecessor input is malformed")
+              source_gate = entry.get("gate")
+              run_id = entry.get("runId")
+              artifact_name = entry.get("artifactName")
+              artifact_digest = entry.get("artifactDigest")
+              if (
+                  source_gate != expected_gate
+                  or source_gate in seen_gates
+                  or not isinstance(run_id, str)
+                  or not RUN_ID.fullmatch(run_id)
+                  or run_id == current_run
+                  or run_id in seen_runs
+                  or artifact_name != expected_name
+                  or not isinstance(artifact_digest, str)
+                  or not re.fullmatch(r"sha256:[a-f0-9]{64}", artifact_digest)
+              ):
+                  fail("protected predecessor input does not bind the selected gate")
+              seen_gates.add(source_gate)
+              seen_runs.add(run_id)
+              run = request_json(f"actions/runs/{run_id}")
+              if (
+                  not isinstance(run, dict)
+                  or run.get("event") != "workflow_dispatch"
+                  or run.get("status") != "completed"
+                  or run.get("conclusion") != "success"
+                  or run.get("head_sha") != commit
+                  or run.get("head_branch") != tag
+                  or run.get("name") != "Release Evidence"
+                  or not isinstance(run.get("path"), str)
+                  or not run["path"].startswith(".github/workflows/release-evidence.yml@")
+              ):
+                  fail("protected predecessor run is cross-lineage or incomplete")
+              artifacts = request_json(f"actions/runs/{run_id}/artifacts?per_page=100")
+              candidates = [
+                  artifact for artifact in artifacts.get("artifacts", [])
+                  if isinstance(artifact, dict) and artifact.get("name") == artifact_name
+              ] if isinstance(artifacts, dict) else []
+              if len(candidates) != 1:
+                  fail("protected predecessor artifact is missing or ambiguous")
+              artifact = candidates[0]
+              artifact_id = artifact.get("id")
+              if (
+                  type(artifact_id) is not int
+                  or artifact_id <= 0
+                  or artifact.get("expired") is not False
+                  or artifact.get("digest") != artifact_digest
+                  or artifact.get("size_in_bytes", 0) <= 0
+                  or not isinstance(artifact.get("archive_download_url"), str)
+              ):
+                  fail("protected predecessor artifact attestation is invalid")
+              source = sources / source_gate
+              source.mkdir(mode=0o700)
+              with tempfile.TemporaryDirectory(dir=stage, prefix=f"{source_gate}-") as temporary:
+                  archive = Path(temporary, "artifact.zip")
+                  download(artifact["archive_download_url"], archive)
+                  safe_extract(archive, source)
+              channel_path = source / "release-lineage-channel.json"
+              try:
+                  channel_raw = channel_path.read_bytes()
+              except OSError:
+                  fail("protected predecessor channel manifest is missing")
+              channel = parse(channel_raw)
+              if not isinstance(channel, dict) or channel_raw != canonical(channel):
+                  fail("protected predecessor channel manifest is non-canonical")
+              required = {"schemaVersion", "artifactType", "producerGate", "tag", "commit", "runId", "predecessors", "files"}
+              if (
+                  set(channel) != required
+                  or channel.get("schemaVersion") != 1
+                  or channel.get("artifactType") != "protected-release-lineage-channel"
+                  or channel.get("producerGate") != source_gate
+                  or channel.get("tag") != tag
+                  or channel.get("commit") != commit
+                  or channel.get("runId") != run_id
+                  or not isinstance(channel.get("predecessors"), list)
+                  or not isinstance(channel.get("files"), list)
+                  or not channel["files"]
+              ):
+                  fail("protected predecessor channel is cross-lineage or malformed")
+              expected_nested = () if source_gate == "m2a-auth-shell" else expected_predecessors[source_gate]
+              if len(channel["predecessors"]) != len(expected_nested):
+                  fail("protected predecessor channel has an incomplete attestation chain")
+              nested_gates = set()
+              for nested, nested_gate in zip(channel["predecessors"], expected_nested, strict=True):
+                  if not isinstance(nested, dict) or set(nested) != {"gate", "runId", "artifactId", "artifactName", "artifactDigest"}:
+                      fail("protected predecessor channel has a malformed attestation chain")
+                  if (
+                      nested.get("gate") != nested_gate
+                      or nested_gate in nested_gates
+                      or not isinstance(nested.get("runId"), str)
+                      or not RUN_ID.fullmatch(nested["runId"])
+                      or nested["runId"] == run_id
+                      or type(nested.get("artifactId")) is not int
+                      or nested["artifactId"] <= 0
+                      or nested.get("artifactName") != expected_name
+                      or not isinstance(nested.get("artifactDigest"), str)
+                      or not re.fullmatch(r"sha256:[a-f0-9]{64}", nested["artifactDigest"])
+                  ):
+                      fail("protected predecessor channel attestation is cross-lineage")
+                  nested_gates.add(nested_gate)
+              manifest_paths = set()
+              for file_entry in channel["files"]:
+                  if not isinstance(file_entry, dict) or set(file_entry) != {"path", "sha256"}:
+                      fail("protected predecessor file attestation is malformed")
+                  relative = file_entry.get("path")
+                  digest = file_entry.get("sha256")
+                  candidate = PurePosixPath(relative) if isinstance(relative, str) else None
+                  if (
+                      not isinstance(relative, str)
+                      or not relative.startswith("Evidence/")
+                      or candidate.is_absolute()
+                      or ".." in candidate.parts
+                      or relative in manifest_paths
+                      or not isinstance(digest, str)
+                      or not SHA256.fullmatch(digest)
+                  ):
+                      fail("protected predecessor file attestation is invalid")
+                  manifest_paths.add(relative)
+                  file_path = source.joinpath(*candidate.parts)
+                  try:
+                      payload = file_path.read_bytes()
+                  except OSError:
+                      fail("protected predecessor evidence file is missing")
+                  if hashlib.sha256(payload).hexdigest() != digest:
+                      fail("protected predecessor evidence digest is invalid")
+                  destination = stage.joinpath(*candidate.parts)
+                  destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                  if destination.exists():
+                      if hashlib.sha256(destination.read_bytes()).hexdigest() != digest:
+                          fail("protected predecessor artifacts disagree")
+                  else:
+                      destination.write_bytes(payload)
+              actual_paths = {
+                  path.relative_to(source).as_posix()
+                  for path in source.rglob("*")
+                  if path.is_file()
+              }
+              if actual_paths != manifest_paths | {"release-lineage-channel.json"}:
+                  fail("protected predecessor archive has unattested files")
+              attestations.append(
+                  {
+                      "gate": source_gate,
+                      "runId": run_id,
+                      "artifactId": artifact_id,
+                      "artifactName": artifact_name,
+                      "artifactDigest": artifact_digest,
+                  }
+              )
+          shutil.rmtree(sources)
+          receipt = {
+              "schemaVersion": 1,
+              "artifactType": "protected-release-predecessor-receipt",
+              "targetGate": gate,
+              "tag": tag,
+              "commit": commit,
+              "artifacts": attestations,
+          }
+          (stage / "release-predecessor-receipt.json").write_bytes(canonical(receipt))
+          PY
+      - name: Publish verified protected predecessor evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: protected-predecessor-${{ github.run_id }}
+          path: ${{ runner.temp }}/protected-predecessor
+          if-no-files-found: error
+          retention-days: 90
+  readiness:
+    name: readiness
+    needs: protected-predecessor
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.release_gate == 'readiness' &&
+      inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      RELEASE_PROTECTED_INPUTS_CONFIRMED: approved
+      HIKER_RELEASE_BUILD_DIGEST: ${{ vars.HIKER_RELEASE_BUILD_DIGEST }}
+      HIKER_RELEASE_INPUT_SHA256: ${{ vars.HIKER_RELEASE_INPUT_SHA256 }}
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - &restore_protected_predecessor
+        name: Restore verified protected predecessor evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: protected-predecessor-${{ github.run_id }}
+          path: ${{ github.workspace }}
+      - name: Run readiness evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-001
+      - name: Upload readiness evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-readiness-${{ github.sha }}
+          path: Evidence/manifests/m6-readiness.json*
+          if-no-files-found: error
+          retention-days: 90
+      - &stage_release_lineage
+        name: Stage immutable release-lineage channel
+        shell: bash
+        env:
+          RELEASE_LINEAGE_GATE: ${{ inputs.release_gate }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/release-lineage" <<'PY'
+          import hashlib
+          import json
+          import os
+          import stat
+          import sys
+          from pathlib import Path
+
+          def fail(message):
+              raise SystemExit(message)
+
+          def reject_duplicates(pairs):
+              value = {}
+              for key, item in pairs:
+                  if key in value:
+                      fail("release-lineage receipt has duplicate JSON members")
+                  value[key] = item
+              return value
+
+          def canonical(value):
+              return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii") + b"\n"
+
+          gate = os.environ.get("RELEASE_LINEAGE_GATE", "")
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          commit = os.environ.get("GITHUB_SHA", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "")
+          if not gate or not tag or len(commit) not in {40, 64} or not run_id.isdecimal() or int(run_id) <= 0:
+              fail("release-lineage context is invalid")
+          stage = Path(sys.argv[1])
+          if stage.exists():
+              fail("release-lineage stage already exists")
+          stage.mkdir(mode=0o700)
+          files = []
+          for root in (Path("Evidence/manifests"), Path("Evidence/runtime"), Path("Evidence/tests")):
+              if not root.exists():
+                  continue
+              metadata = root.lstat()
+              if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+                  fail("release-lineage evidence root is unsafe")
+              for source in sorted(root.rglob("*")):
+                  metadata = source.lstat()
+                  if stat.S_ISLNK(metadata.st_mode):
+                      fail("release-lineage evidence contains a symbolic link")
+                  if source.is_dir():
+                      continue
+                  if not stat.S_ISREG(metadata.st_mode) or metadata.st_size <= 0 or metadata.st_size > 256 * 1024 * 1024:
+                      fail("release-lineage evidence file is invalid")
+                  relative = source.as_posix()
+                  payload = source.read_bytes()
+                  destination = stage / relative
+                  destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                  destination.write_bytes(payload)
+                  files.append({"path": relative, "sha256": hashlib.sha256(payload).hexdigest()})
+          if not files:
+              fail("release-lineage has no evidence files")
+          receipt_path = Path("release-predecessor-receipt.json")
+          predecessors = []
+          if receipt_path.exists():
+              metadata = receipt_path.lstat()
+              if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode) or metadata.st_size <= 0 or metadata.st_size > 128 * 1024:
+                  fail("release-lineage predecessor receipt is invalid")
+              try:
+                  receipt_raw = receipt_path.read_bytes()
+                  receipt = json.loads(receipt_raw.decode("utf-8", "strict"), object_pairs_hook=reject_duplicates)
+              except (UnicodeDecodeError, json.JSONDecodeError):
+                  fail("release-lineage predecessor receipt is invalid")
+              expected = {"schemaVersion", "artifactType", "targetGate", "tag", "commit", "artifacts"}
+              if (
+                  not isinstance(receipt, dict)
+                  or receipt_raw != canonical(receipt)
+                  or set(receipt) != expected
+                  or receipt.get("schemaVersion") != 1
+                  or receipt.get("artifactType") != "protected-release-predecessor-receipt"
+                  or receipt.get("targetGate") != gate
+                  or receipt.get("tag") != tag
+                  or receipt.get("commit") != commit
+                  or not isinstance(receipt.get("artifacts"), list)
+                  or not receipt["artifacts"]
+              ):
+                  fail("release-lineage predecessor receipt is cross-lineage")
+              predecessors = receipt["artifacts"]
+          channel = {
+              "schemaVersion": 1,
+              "artifactType": "protected-release-lineage-channel",
+              "producerGate": gate,
+              "tag": tag,
+              "commit": commit,
+              "runId": run_id,
+              "predecessors": predecessors,
+              "files": files,
+          }
+          (stage / "release-lineage-channel.json").write_bytes(canonical(channel))
+          PY
+      - &upload_release_lineage
+        name: Upload immutable release-lineage channel
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-lineage-${{ github.sha }}
+          path: ${{ runner.temp }}/release-lineage
+          if-no-files-found: error
+          retention-days: 90
+
+  m2a-auth-shell:
+    name: m2a-auth-shell
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref_type == 'tag' &&
+      inputs.release_gate == 'm2a-auth-shell' &&
+      inputs.confirm_protected_gate
+    runs-on: macos-15
+    environment: staging
+    permissions:
+      actions: read
+      attestations: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out immutable release tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify signed tag resolves to this run's commit
+        shell: bash
+        env:
+          M2A_RELEASE_TAG_PUBLIC_KEY_BASE64: ${{ vars.M2A_RELEASE_TAG_PUBLIC_KEY_BASE64 }}
+          M2A_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.M2A_RELEASE_TAG_SIGNING_FINGERPRINT }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_TYPE" = tag
+          test "${GITHUB_REF}" = "refs/tags/${GITHUB_REF_NAME}"
+          test "$(git rev-parse --verify "${GITHUB_REF_NAME}^{}")" = "$GITHUB_SHA"
+          python3 - <<'PY'
+          import base64
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          encoded_key = os.environ.get("M2A_RELEASE_TAG_PUBLIC_KEY_BASE64", "")
+          fingerprint = os.environ.get("M2A_RELEASE_TAG_SIGNING_FINGERPRINT", "").upper()
+          if not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", encoded_key) or not re.fullmatch(r"[A-F0-9]{40,64}", fingerprint):
+              raise SystemExit("protected release-tag verification configuration is unavailable")
+          try:
+              public_key = base64.b64decode(encoded_key, validate=True)
+          except ValueError as error:
+              raise SystemExit("release-tag public key is malformed") from error
+          home = Path(os.environ["RUNNER_TEMP"], "m2a-release-tag-gpg")
+          home.mkdir(mode=0o700)
+          key_path = home / "release-tag.pub"
+          key_path.write_bytes(public_key)
+          imported = subprocess.run(["gpg", "--batch", "--homedir", str(home), "--import", str(key_path)], check=False, capture_output=True)
+          environment = dict(os.environ, GNUPGHOME=str(home))
+          verified = subprocess.run(["git", "verify-tag", "--raw", os.environ["GITHUB_REF_NAME"]], check=False, capture_output=True, env=environment)
+          status = (verified.stdout + verified.stderr).decode("utf-8", "strict")
+          if imported.returncode or verified.returncode or f"[GNUPG:] VALIDSIG {fingerprint} " not in status:
+              raise SystemExit("release tag is not signed by the protected release key")
+          with Path(os.environ["GITHUB_ENV"]).open("a", encoding="ascii") as output:
+              output.write(f"GNUPGHOME={home}\n")
+              output.write(f"M2A_RELEASE_TAG_SIGNING_FINGERPRINT={fingerprint}\n")
+          PY
+      - name: Install protected Release signing material
+        shell: bash
+        env:
+          M2A_SIGNING_CERTIFICATE_BASE64: ${{ secrets.M2A_SIGNING_CERTIFICATE_BASE64 }}
+          M2A_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.M2A_SIGNING_CERTIFICATE_PASSWORD }}
+          M2A_PROVISIONING_PROFILE_BASE64: ${{ secrets.M2A_PROVISIONING_PROFILE_BASE64 }}
+          M2A_KEYCHAIN_PASSWORD: ${{ secrets.M2A_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/m2a-signing.p12" "$RUNNER_TEMP/m2a-profile.mobileprovision" <<'PY'
+          import base64
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          certificate, profile = sys.argv[1:]
+          values = (
+              os.environ.get("M2A_SIGNING_CERTIFICATE_BASE64", ""),
+              os.environ.get("M2A_PROVISIONING_PROFILE_BASE64", ""),
+          )
+          if any(not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", value) for value in values):
+              raise SystemExit("protected signing material is unavailable")
+          try:
+              decoded = [base64.b64decode(value, validate=True) for value in values]
+          except ValueError as error:
+              raise SystemExit("protected signing material is malformed") from error
+          if any(len(value) < 256 for value in decoded):
+              raise SystemExit("protected signing material is unavailable")
+          for destination, value in zip((certificate, profile), decoded, strict=True):
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(value)
+          PY
+          test -n "$M2A_SIGNING_CERTIFICATE_PASSWORD"
+          test -n "$M2A_KEYCHAIN_PASSWORD"
+          security create-keychain -p "$M2A_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/m2a-signing.keychain-db"
+          security set-keychain-settings -lut 3600 "$RUNNER_TEMP/m2a-signing.keychain-db"
+          security unlock-keychain -p "$M2A_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/m2a-signing.keychain-db"
+          security import "$RUNNER_TEMP/m2a-signing.p12" -k "$RUNNER_TEMP/m2a-signing.keychain-db" -P "$M2A_SIGNING_CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$M2A_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/m2a-signing.keychain-db"
+          security list-keychain -d user -s "$RUNNER_TEMP/m2a-signing.keychain-db"
+          profile_uuid="$(security cms -D -i "$RUNNER_TEMP/m2a-profile.mobileprovision" | plutil -extract UUID raw -)"
+          test -n "$profile_uuid"
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          install -m 600 "$RUNNER_TEMP/m2a-profile.mobileprovision" "$HOME/Library/MobileDevice/Provisioning Profiles/$profile_uuid.mobileprovision"
+          printf '%s\n' "profile_uuid=$profile_uuid" >> "$GITHUB_ENV"
+      - name: Archive the signed Release shell
+        id: archive
+        shell: bash
+        env:
+          M2A_BUNDLE_ID: ${{ vars.M2A_BUNDLE_ID }}
+          M2A_SIGNING_IDENTITY: ${{ vars.M2A_SIGNING_IDENTITY }}
+          M2A_SIGNING_TEAM_ID: ${{ vars.M2A_SIGNING_TEAM_ID }}
+          M2A_AUTHORIZATION_URL: ${{ vars.M2A_AUTHORIZATION_URL }}
+          M2A_SESSION_EXCHANGE_URL: ${{ vars.M2A_SESSION_EXCHANGE_URL }}
+          M2A_PUBLISHABLE_KEY: ${{ vars.M2A_PUBLISHABLE_KEY }}
+          M2A_CHECKPOINT_URL: ${{ vars.M2A_CHECKPOINT_URL }}
+          M2A_CALLBACK_SCHEME: ${{ vars.M2A_CALLBACK_SCHEME }}
+          M2A_CALLBACK_HOST: ${{ vars.M2A_CALLBACK_HOST }}
+          M2A_CALLBACK_PATH: ${{ vars.M2A_CALLBACK_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "$M2A_BUNDLE_ID"
+          test -n "$M2A_SIGNING_IDENTITY"
+          test -n "$M2A_SIGNING_TEAM_ID"
+          for value in "$M2A_AUTHORIZATION_URL" "$M2A_SESSION_EXCHANGE_URL" "$M2A_PUBLISHABLE_KEY" "$M2A_CHECKPOINT_URL" "$M2A_CALLBACK_SCHEME" "$M2A_CALLBACK_HOST" "$M2A_CALLBACK_PATH"; do
+            test -n "$value"
+            case "$value" in *'$('*|'${'*) exit 1 ;; esac
+          done
+          mkdir -p Evidence/runtime/live "$RUNNER_TEMP/m2a-export"
+          xcodebuild archive \
+            -workspace Hiker.xcworkspace \
+            -scheme HikerApp \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/m2a-release.xcarchive" \
+            DEVELOPMENT_TEAM="$M2A_SIGNING_TEAM_ID" \
+            CODE_SIGN_IDENTITY="$M2A_SIGNING_IDENTITY" \
+            PROVISIONING_PROFILE="$profile_uuid" \
+            CODE_SIGN_STYLE=Manual \
+            HIKER_APPLE_SUPABASE_AUTHORIZATION_URL="$M2A_AUTHORIZATION_URL" \
+            HIKER_APPLE_SUPABASE_SESSION_EXCHANGE_URL="$M2A_SESSION_EXCHANGE_URL" \
+            HIKER_APPLE_SUPABASE_PUBLISHABLE_KEY="$M2A_PUBLISHABLE_KEY" \
+            HIKER_APPLE_AUTHENTICATION_CHECKPOINT_URL="$M2A_CHECKPOINT_URL" \
+            HIKER_APPLE_SUPABASE_CALLBACK_SCHEME="$M2A_CALLBACK_SCHEME" \
+            HIKER_APPLE_SUPABASE_CALLBACK_HOST="$M2A_CALLBACK_HOST" \
+            HIKER_APPLE_SUPABASE_CALLBACK_PATH="$M2A_CALLBACK_PATH"
+          cat > "$RUNNER_TEMP/m2a-export/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>signingStyle</key><string>manual</string></dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/m2a-release.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/m2a-export/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/m2a-export"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/m2a-release.xcarchive" Evidence/runtime/live/M2A-release.xcarchive.zip
+          install -m 600 "$RUNNER_TEMP/m2a-export/HikerApp.ipa" Evidence/runtime/live/M2A-release.ipa
+          codesign --verify --deep --strict "$RUNNER_TEMP/m2a-release.xcarchive/Products/Applications/HikerApp.app"
+          archived_info="$RUNNER_TEMP/m2a-release.xcarchive/Products/Applications/HikerApp.app/Info.plist"
+          test "$(plutil -extract HikerAppleSupabaseAuthorizationURL raw "$archived_info")" = "$M2A_AUTHORIZATION_URL"
+          test "$(plutil -extract HikerAppleSupabaseSessionExchangeURL raw "$archived_info")" = "$M2A_SESSION_EXCHANGE_URL"
+          test "$(plutil -extract HikerAppleSupabasePublishableKey raw "$archived_info")" = "$M2A_PUBLISHABLE_KEY"
+          test "$(plutil -extract HikerAppleAuthenticationCheckpointURL raw "$archived_info")" = "$M2A_CHECKPOINT_URL"
+          test "$(plutil -extract HikerAppleSupabaseCallbackScheme raw "$archived_info")" = "$M2A_CALLBACK_SCHEME"
+          test "$(plutil -extract HikerAppleSupabaseCallbackHost raw "$archived_info")" = "$M2A_CALLBACK_HOST"
+          test "$(plutil -extract HikerAppleSupabaseCallbackPath raw "$archived_info")" = "$M2A_CALLBACK_PATH"
+          test "$(plutil -extract CFBundleURLTypes.0.CFBundleURLSchemes.0 raw "$archived_info")" = "$M2A_CALLBACK_SCHEME"
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def canonical(value):
+              return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+
+          def digest(path):
+              hasher = hashlib.sha256()
+              with Path(path).open("rb") as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                      hasher.update(chunk)
+              return hasher.hexdigest()
+
+          def publish(path, commit_path, document):
+              raw = canonical(document) + b"\n"
+              sidecar_path = Path(f"{path}.sha256")
+              sidecar = f"{hashlib.sha256(raw).hexdigest()}  {path.as_posix()}\n".encode("ascii")
+              commit = canonical({
+                  "schemaVersion": 1,
+                  "artifactType": "evidence-publication-commit",
+                  "evidencePath": path.as_posix(),
+                  "evidenceSHA256": hashlib.sha256(raw).hexdigest(),
+                  "sidecarPath": sidecar_path.as_posix(),
+                  "sidecarSHA256": hashlib.sha256(sidecar).hexdigest(),
+              }) + b"\n"
+              for destination, content in ((path, raw), (sidecar_path, sidecar), (commit_path, commit)):
+                  descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                  with os.fdopen(descriptor, "wb") as output:
+                      output.write(content)
+                      output.flush()
+                      os.fsync(output.fileno())
+
+          archive = Path("Evidence/runtime/live/M2A-release.xcarchive.zip")
+          ipa = Path("Evidence/runtime/live/M2A-release.ipa")
+          application = Path(os.environ["RUNNER_TEMP"], "m2a-release.xcarchive", "Products", "Applications", "HikerApp.app")
+          details = subprocess.run(["codesign", "-d", "--verbose=4", str(application)], check=False, capture_output=True)
+          identifier = subprocess.run(["plutil", "-extract", "CFBundleIdentifier", "raw", "-o", "-", str(application / "Info.plist")], check=False, capture_output=True)
+          if details.returncode or identifier.returncode:
+              raise SystemExit("signed archive metadata is unavailable")
+          metadata = (details.stdout + details.stderr).decode("utf-8", "strict")
+          lines = sorted(line.strip() for line in metadata.splitlines() if line.startswith(("Identifier=", "TeamIdentifier=", "Authority=")))
+          if identifier.stdout.decode("utf-8", "strict").strip() != os.environ["M2A_BUNDLE_ID"] or f"TeamIdentifier={os.environ['M2A_SIGNING_TEAM_ID']}" not in lines:
+              raise SystemExit("archive signing identity does not match protected Release configuration")
+          build_digest = digest(archive)
+          ipa_digest = digest(ipa)
+          publish(
+              Path("Evidence/runtime/M2A-BUILD.json"),
+              Path("Evidence/runtime/M2A-BUILD.commit"),
+              {
+                  "schemaVersion": 2,
+                  "artifactType": "m2a-signed-release-archive",
+                  "githubRunId": os.environ["GITHUB_RUN_ID"],
+                  "gitSHA": os.environ["GITHUB_SHA"],
+                  "releaseTag": os.environ["GITHUB_REF_NAME"],
+                  "archivePath": archive.as_posix(),
+                  "archiveSHA256": build_digest,
+                  "ipaPath": ipa.as_posix(),
+                  "ipaSHA256": ipa_digest,
+                  "bundleIdentifier": os.environ["M2A_BUNDLE_ID"],
+                  "signingTeamId": os.environ["M2A_SIGNING_TEAM_ID"],
+                  "codeSigningMetadataSHA256": hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest(),
+                  "collectedAt": datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              },
+          )
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="ascii") as output:
+              output.write(f"build_digest={build_digest}\n")
+              output.write(f"testflight_digest={ipa_digest}\n")
+          PY
+      - name: Attest signed archive identity
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: Evidence/runtime/live/M2A-release.xcarchive.zip
+      - name: Upload and query the actual TestFlight build
+        shell: bash
+        env:
+          M2A_ASC_APP_ID: ${{ vars.M2A_ASC_APP_ID }}
+          M2A_ASC_ISSUER_ID: ${{ secrets.M2A_ASC_ISSUER_ID }}
+          M2A_ASC_KEY_ID: ${{ secrets.M2A_ASC_KEY_ID }}
+          M2A_ASC_PRIVATE_KEY_BASE64: ${{ secrets.M2A_ASC_PRIVATE_KEY_BASE64 }}
+          M2A_BUILD_DIGEST: ${{ steps.archive.outputs.build_digest }}
+          M2A_TESTFLIGHT_DIGEST: ${{ steps.archive.outputs.testflight_digest }}
+        run: |
+          set -euo pipefail
+          test -n "$M2A_ASC_APP_ID"
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          python3 - <<'PY'
+          import base64
+          import os
+          import re
+          from pathlib import Path
+
+          key_id = os.environ.get("M2A_ASC_KEY_ID", "")
+          value = os.environ.get("M2A_ASC_PRIVATE_KEY_BASE64", "")
+          if not re.fullmatch(r"[A-Za-z0-9]{10}", key_id) or not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", value):
+              raise SystemExit("protected App Store Connect credentials are unavailable")
+          try:
+              key = base64.b64decode(value, validate=True)
+          except ValueError as error:
+              raise SystemExit("protected App Store Connect credentials are malformed") from error
+          if b"BEGIN PRIVATE KEY" not in key:
+              raise SystemExit("protected App Store Connect credentials are malformed")
+          destination = Path.home() / ".appstoreconnect" / "private_keys" / f"AuthKey_{key_id}.p8"
+          descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(descriptor, "wb") as output:
+              output.write(key)
+          PY
+          xcrun altool --upload-app --type ios --file Evidence/runtime/live/M2A-release.ipa --apiKey "$M2A_ASC_KEY_ID" --apiIssuer "$M2A_ASC_ISSUER_ID" --output-format json > "$RUNNER_TEMP/m2a-altool-upload.json"
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import plistlib
+          import subprocess
+          import time
+          import urllib.parse
+          import urllib.request
+          import zipfile
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def canonical(value):
+              return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+
+          def sha256(value):
+              return hashlib.sha256(value if isinstance(value, bytes) else canonical(value)).hexdigest()
+
+          def b64url(value):
+              return base64.urlsafe_b64encode(value).rstrip(b"=")
+
+          def es256_signature(der):
+              if not der or der[0] != 0x30:
+                  raise ValueError("invalid DER signature")
+              offset = 1
+              length = der[offset]
+              offset += 1
+              if length & 0x80:
+                  width = length & 0x7f
+                  if width == 0 or width > 2:
+                      raise ValueError("invalid DER signature")
+                  length = int.from_bytes(der[offset:offset + width], "big")
+                  offset += width
+              if offset + length != len(der):
+                  raise ValueError("invalid DER signature")
+              values = []
+              for _ in range(2):
+                  if offset >= len(der) or der[offset] != 0x02:
+                      raise ValueError("invalid DER signature")
+                  offset += 1
+                  width = der[offset]
+                  offset += 1
+                  if width & 0x80:
+                      count = width & 0x7f
+                      if count == 0 or count > 2:
+                          raise ValueError("invalid DER signature")
+                      width = int.from_bytes(der[offset:offset + count], "big")
+                      offset += count
+                  value = der[offset:offset + width]
+                  offset += width
+                  if not value:
+                      raise ValueError("invalid DER signature")
+                  values.append(int.from_bytes(value, "big").to_bytes(32, "big"))
+              if offset != len(der):
+                  raise ValueError("invalid DER signature")
+              return b"".join(values)
+
+          def jwt():
+              header = b64url(canonical({"alg": "ES256", "kid": os.environ["M2A_ASC_KEY_ID"], "typ": "JWT"}))
+              payload = b64url(canonical({
+                  "iss": os.environ["M2A_ASC_ISSUER_ID"],
+                  "aud": "appstoreconnect-v1",
+                  "exp": int(time.time()) + 600,
+              }))
+              signed = header + b"." + payload
+              key = Path.home() / ".appstoreconnect" / "private_keys" / f"AuthKey_{os.environ['M2A_ASC_KEY_ID']}.p8"
+              result = subprocess.run(["openssl", "dgst", "-sha256", "-sign", str(key)], input=signed, check=False, capture_output=True)
+              if result.returncode:
+                  raise SystemExit("unable to authenticate App Store Connect API request")
+              return (signed + b"." + b64url(es256_signature(result.stdout))).decode("ascii")
+
+          def publish(path, commit_path, document):
+              raw = canonical(document) + b"\n"
+              sidecar_path = Path(f"{path}.sha256")
+              sidecar = f"{hashlib.sha256(raw).hexdigest()}  {path.as_posix()}\n".encode("ascii")
+              commit = canonical({
+                  "schemaVersion": 1,
+                  "artifactType": "evidence-publication-commit",
+                  "evidencePath": path.as_posix(),
+                  "evidenceSHA256": hashlib.sha256(raw).hexdigest(),
+                  "sidecarPath": sidecar_path.as_posix(),
+                  "sidecarSHA256": hashlib.sha256(sidecar).hexdigest(),
+              }) + b"\n"
+              for destination, content in ((path, raw), (sidecar_path, sidecar), (commit_path, commit)):
+                  descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                  with os.fdopen(descriptor, "wb") as output:
+                      output.write(content)
+                      output.flush()
+                      os.fsync(output.fileno())
+
+          with zipfile.ZipFile("Evidence/runtime/live/M2A-release.ipa") as ipa:
+              info = plistlib.loads(ipa.read("Payload/HikerApp.app/Info.plist"))
+          version = info.get("CFBundleVersion")
+          if not isinstance(version, str) or not version.isdigit():
+              raise SystemExit("Release IPA has no numeric build version")
+          query = {"filter[app]": os.environ["M2A_ASC_APP_ID"], "filter[version]": version, "limit": "1"}
+          endpoint = "https://api.appstoreconnect.apple.com/v1/builds"
+          request_url = endpoint + "?" + urllib.parse.urlencode(query)
+          selected = None
+          for _ in range(60):
+              request = urllib.request.Request(request_url, headers={"Accept": "application/json", "Authorization": f"Bearer {jwt()}"})
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  if response.status != 200 or response.geturl() != request_url:
+                      raise SystemExit("App Store Connect build query failed")
+                  body = json.loads(response.read(512 * 1024 + 1).decode("utf-8", "strict"))
+              values = body.get("data") if isinstance(body, dict) else None
+              if isinstance(values, list) and len(values) == 1 and isinstance(values[0], dict):
+                  candidate = values[0]
+                  attributes = candidate.get("attributes")
+                  if (
+                      candidate.get("type") == "build"
+                      and isinstance(candidate.get("id"), str)
+                      and candidate["id"].isdigit()
+                      and isinstance(attributes, dict)
+                      and attributes.get("version") == version
+                      and isinstance(attributes.get("uploadedDate"), str)
+                  ):
+                      selected = candidate
+                      break
+              time.sleep(15)
+          if selected is None:
+              raise SystemExit("uploaded TestFlight build was not observed through App Store Connect")
+          uploaded = selected["attributes"]["uploadedDate"]
+          observed = datetime.fromisoformat(uploaded.replace("Z", "+00:00")).astimezone(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+          response_document = {
+              "schemaVersion": 1,
+              "artifactType": "app-store-connect-build-response",
+              "apiEndpoint": endpoint,
+              "statusCode": 200,
+              "appStoreBuildId": selected["id"],
+              "appStoreBuildVersion": version,
+              "uploadedDate": observed,
+              "querySHA256": sha256(query),
+          }
+          response_path = Path("Evidence/runtime/live/M2A-ASC-response.json")
+          descriptor = os.open(response_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(descriptor, "wb") as output:
+              output.write(canonical(response_document) + b"\n")
+          upload_raw = Path(os.environ["RUNNER_TEMP"], "m2a-altool-upload.json").read_bytes()
+          if not upload_raw:
+              raise SystemExit("App Store Connect upload response was unavailable")
+          publish(
+              Path("Evidence/runtime/M2A-UPLOAD.json"),
+              Path("Evidence/runtime/M2A-UPLOAD.commit"),
+              {
+                  "schemaVersion": 2,
+                  "artifactType": "app-store-connect-testflight-observation",
+                  "githubRunId": os.environ["GITHUB_RUN_ID"],
+                  "gitSHA": os.environ["GITHUB_SHA"],
+                  "buildDigest": os.environ["M2A_BUILD_DIGEST"],
+                  "testFlightDigest": os.environ["M2A_TESTFLIGHT_DIGEST"],
+                  "ipaPath": "Evidence/runtime/live/M2A-release.ipa",
+                  "appStoreBuildId": selected["id"],
+                  "appStoreBuildVersion": version,
+                  "apiEndpoint": endpoint,
+                  "apiResponseSHA256": sha256(response_document),
+                  "uploadResponseSHA256": sha256(upload_raw),
+                  "observedAt": datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              },
+          )
+          PY
+      - name: Attest uploaded IPA identity
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: Evidence/runtime/live/M2A-release.ipa
+      - name: Read signed immutable Supabase checkpoint receipt
+        shell: bash
+        env:
+          M2A_BUILD_DIGEST: ${{ steps.archive.outputs.build_digest }}
+          M2A_TESTFLIGHT_DIGEST: ${{ steps.archive.outputs.testflight_digest }}
+          M2A_CHECKPOINT_RECEIPT_URL: ${{ vars.M2A_CHECKPOINT_RECEIPT_URL }}
+          M2A_CHECKPOINT_RECEIPT_PUBLIC_KEY_BASE64: ${{ vars.M2A_CHECKPOINT_RECEIPT_PUBLIC_KEY_BASE64 }}
+          M2A_CHECKPOINT_RECEIPT_TOKEN: ${{ secrets.M2A_CHECKPOINT_RECEIPT_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import re
+          import subprocess
+          import tempfile
+          import time
+          import urllib.parse
+          import urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          SHA256 = re.compile(r"^[a-f0-9]{64}$")
+          UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
+          CODE = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
+
+          def canonical(value):
+              return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+
+          def sha256(value):
+              return hashlib.sha256(value if isinstance(value, bytes) else canonical(value)).hexdigest()
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, message, headers, newurl):
+                  return None
+
+          def publish(path, commit_path, document):
+              raw = canonical(document) + b"\n"
+              sidecar_path = Path(f"{path}.sha256")
+              sidecar = f"{hashlib.sha256(raw).hexdigest()}  {path.as_posix()}\n".encode("ascii")
+              commit = canonical({
+                  "schemaVersion": 1,
+                  "artifactType": "evidence-publication-commit",
+                  "evidencePath": path.as_posix(),
+                  "evidenceSHA256": hashlib.sha256(raw).hexdigest(),
+                  "sidecarPath": sidecar_path.as_posix(),
+                  "sidecarSHA256": hashlib.sha256(sidecar).hexdigest(),
+              }) + b"\n"
+              for destination, content in ((path, raw), (sidecar_path, sidecar), (commit_path, commit)):
+                  descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                  with os.fdopen(descriptor, "wb") as output:
+                      output.write(content)
+                      output.flush()
+                      os.fsync(output.fileno())
+
+          endpoint = os.environ.get("M2A_CHECKPOINT_RECEIPT_URL", "")
+          token = os.environ.get("M2A_CHECKPOINT_RECEIPT_TOKEN", "")
+          encoded_key = os.environ.get("M2A_CHECKPOINT_RECEIPT_PUBLIC_KEY_BASE64", "")
+          parsed = urllib.parse.urlparse(endpoint)
+          if parsed.scheme != "https" or not parsed.netloc or parsed.query or parsed.fragment or not token or not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", encoded_key):
+              raise SystemExit("protected checkpoint receipt configuration is unavailable")
+          try:
+              public_key = base64.b64decode(encoded_key, validate=True)
+          except ValueError as error:
+              raise SystemExit("checkpoint receipt public key is malformed") from error
+          if b"BEGIN PUBLIC KEY" not in public_key:
+              raise SystemExit("checkpoint receipt public key is malformed")
+          query = {
+              "githubRunId": os.environ["GITHUB_RUN_ID"],
+              "gitSHA": os.environ["GITHUB_SHA"],
+              "buildDigest": os.environ["M2A_BUILD_DIGEST"],
+              "testFlightBuildDigest": os.environ["M2A_TESTFLIGHT_DIGEST"],
+          }
+          response_url = endpoint + "?" + urllib.parse.urlencode(query)
+          opener = urllib.request.build_opener(NoRedirect)
+          raw = signature = None
+          for _ in range(30):
+              request = urllib.request.Request(response_url, headers={"Accept": "application/json", "Authorization": f"Bearer {token}"})
+              try:
+                  with opener.open(request, timeout=20) as response:
+                      if response.status != 200 or response.geturl() != response_url:
+                          raise SystemExit("checkpoint receipt query failed")
+                      candidate = response.read(64 * 1024 + 1)
+                      signature_header = response.headers.get("X-M2A-Receipt-Signature")
+                      algorithm = response.headers.get("X-M2A-Receipt-Signature-Algorithm")
+              except Exception:
+                  time.sleep(10)
+                  continue
+              if len(candidate) > 64 * 1024 or not signature_header or algorithm != "ed25519":
+                  time.sleep(10)
+                  continue
+              try:
+                  candidate_signature = base64.b64decode(signature_header, validate=True)
+              except ValueError:
+                  time.sleep(10)
+                  continue
+              with tempfile.TemporaryDirectory(prefix="m2a-receipt-") as directory:
+                  key_path = Path(directory, "key.pem")
+                  body_path = Path(directory, "body.json")
+                  signature_path = Path(directory, "body.sig")
+                  key_path.write_bytes(public_key)
+                  body_path.write_bytes(candidate)
+                  signature_path.write_bytes(candidate_signature)
+                  verified = subprocess.run(
+                      ["openssl", "pkeyutl", "-verify", "-pubin", "-inkey", str(key_path), "-rawin", "-in", str(body_path), "-sigfile", str(signature_path)],
+                      check=False,
+                      capture_output=True,
+                  )
+              if verified.returncode == 0:
+                  raw, signature = candidate, candidate_signature
+                  break
+              time.sleep(10)
+          if raw is None or signature is None:
+              raise SystemExit("signed immutable checkpoint receipt was not observed")
+          try:
+              def reject_duplicate_object(pairs):
+                  value = {}
+                  for key, item in pairs:
+                      if key in value:
+                          raise ValueError("duplicate key")
+                      value[key] = item
+                  return value
+
+              response = json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=reject_duplicate_object)
+          except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+              raise SystemExit("checkpoint receipt is not JSON")
+          fields = {
+              "schemaVersion", "receiptId", "transactionId", "githubRunId", "gitSHA", "buildDigest", "testFlightBuildDigest",
+              "actorCorrelationSHA256", "nonceSHA256", "stateSHA256", "callbackSHA256",
+              "issuerValidated", "issuerCode", "audienceValidated", "audienceCode", "providerValidated", "providerCode",
+              "callbackValidated", "callbackCode", "supabaseSessionIssued", "sessionCode",
+              "completedAt", "receiptSHA256",
+          }
+          if (
+              not isinstance(response, dict)
+              or set(response) != fields
+              or response.get("schemaVersion") != 1
+              or response.get("githubRunId") != query["githubRunId"]
+              or response.get("gitSHA") != query["gitSHA"]
+              or response.get("buildDigest") != query["buildDigest"]
+              or response.get("testFlightBuildDigest") != query["testFlightBuildDigest"]
+              or any(not isinstance(response.get(field), str) or UUID.fullmatch(response[field]) is None for field in ("receiptId", "transactionId"))
+              or any(not isinstance(response.get(field), str) or SHA256.fullmatch(response[field]) is None for field in ("actorCorrelationSHA256", "nonceSHA256", "stateSHA256", "callbackSHA256", "receiptSHA256"))
+              or any(response.get(field) is not True for field in ("issuerValidated", "audienceValidated", "providerValidated", "callbackValidated", "supabaseSessionIssued"))
+              or any(not isinstance(response.get(field), str) or CODE.fullmatch(response[field]) is None for field in ("issuerCode", "audienceCode", "providerCode", "callbackCode", "sessionCode"))
+          ):
+              raise SystemExit("checkpoint receipt does not match immutable run correlation")
+          response_path = Path("Evidence/runtime/live/M2A-checkpoint-response.json")
+          signature_path = Path("Evidence/runtime/live/M2A-checkpoint-response.sig")
+          for destination, content in ((response_path, raw), (signature_path, signature)):
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(content)
+          source = dict(response)
+          source.update({
+              "artifactType": "m2a-immutable-checkpoint-observation",
+              "receiptResponseSHA256": sha256(raw),
+              "responseSignatureSHA256": sha256(signature),
+              "signatureAlgorithm": "ed25519",
+              "observedAt": datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+          })
+          publish(
+              Path("Evidence/runtime/AUTH-APPLE-STAGING-source.json"),
+              Path("Evidence/runtime/AUTH-APPLE-STAGING-source.commit"),
+              source,
+          )
+          PY
+      - name: Collect current M2A role approvals
+        env:
+          M2A_PROTECTED_ENVIRONMENT: staging
+          M2A_BUILD_DIGEST: ${{ steps.archive.outputs.build_digest }}
+          M2A_TESTFLIGHT_DIGEST: ${{ steps.archive.outputs.testflight_digest }}
+          M2A_APPROVAL_ISSUE_URL: ${{ vars.M2A_APPROVAL_ISSUE_URL }}
+          M2A_APPROVALS_TOKEN: ${{ secrets.M2A_APPROVALS_TOKEN }}
+          M2A_APPROVER_PSEUDONYM_KEY_BASE64: ${{ secrets.M2A_APPROVER_PSEUDONYM_KEY_BASE64 }}
+          M2A_PRODUCT_TEAM_ID: ${{ vars.M2A_PRODUCT_TEAM_ID }}
+          M2A_PRODUCT_TEAM_SLUG: ${{ vars.M2A_PRODUCT_TEAM_SLUG }}
+          M2A_SECURITY_TEAM_ID: ${{ vars.M2A_SECURITY_TEAM_ID }}
+          M2A_SECURITY_TEAM_SLUG: ${{ vars.M2A_SECURITY_TEAM_SLUG }}
+          M2A_OPS_TEAM_ID: ${{ vars.M2A_OPS_TEAM_ID }}
+          M2A_OPS_TEAM_SLUG: ${{ vars.M2A_OPS_TEAM_SLUG }}
+        run: Scripts/release/collect-role-approvals.sh
+      - name: Run protected staging auth evidence profile
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          M2A_PROTECTED_ENVIRONMENT: staging
+          M2A_BUNDLE_ID: ${{ vars.M2A_BUNDLE_ID }}
+          M2A_SIGNING_TEAM_ID: ${{ vars.M2A_SIGNING_TEAM_ID }}
+          M2A_CHECKPOINT_RECEIPT_PUBLIC_KEY_BASE64: ${{ vars.M2A_CHECKPOINT_RECEIPT_PUBLIC_KEY_BASE64 }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-APPLE-STAGING
+      - name: Attest committed evidence identity
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: Evidence/runtime/AUTH-APPLE-STAGING.commit
+      - name: Upload staging auth evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: m2a-auth-shell-${{ github.sha }}
+          path: |
+            Evidence/runtime/AUTH-APPLE-STAGING.json
+            Evidence/runtime/AUTH-APPLE-STAGING.json.sha256
+            Evidence/runtime/AUTH-APPLE-STAGING.commit
+            Evidence/runtime/approvals/m2a.json
+            Evidence/runtime/approvals/m2a.json.sha256
+            Evidence/runtime/approvals/m2a.commit
+            Evidence/runtime/M2A-BUILD.json
+            Evidence/runtime/M2A-BUILD.json.sha256
+            Evidence/runtime/M2A-BUILD.commit
+            Evidence/runtime/M2A-UPLOAD.json
+            Evidence/runtime/M2A-UPLOAD.json.sha256
+            Evidence/runtime/M2A-UPLOAD.commit
+            Evidence/runtime/AUTH-APPLE-STAGING-source.json
+            Evidence/runtime/AUTH-APPLE-STAGING-source.json.sha256
+            Evidence/runtime/AUTH-APPLE-STAGING-source.commit
+            Evidence/runtime/live/M2A-release.xcarchive.zip
+            Evidence/runtime/live/M2A-release.ipa
+            Evidence/runtime/live/M2A-ASC-response.json
+            Evidence/runtime/live/M2A-checkpoint-response.json
+            Evidence/runtime/live/M2A-checkpoint-response.sig
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+
+  internal-alpha:
+    name: internal-alpha
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'internal-alpha' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: staging
+    env: &signed_staging
+      RELEASE_PROTECTED_ENVIRONMENT: staging
+      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
+      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - &verify_protected_source
+        name: Verify digest-addressed signed protected source
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_GATE: ${{ inputs.release_gate }}
+          RELEASE_PROTECTED_SOURCE_ARTIFACTS: ${{ inputs.protected_source_artifacts }}
+          OBSERVATION_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+          THRESHOLD_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import io
+          import json
+          import os
+          import re
+          import stat
+          import subprocess
+          import tempfile
+          import urllib.error
+          import urllib.request
+          import zipfile
+          from pathlib import Path
+
+          def fail(message):
+              raise SystemExit(message)
+
+          def reject_duplicates(pairs):
+              value = {}
+              for key, item in pairs:
+                  if key in value:
+                      fail("protected source input has duplicate JSON members")
+                  value[key] = item
+              return value
+
+          expected_sources = {
+              "alert-drill": ("alert-drill-observation", "release-observation.json", "release-observation.sig"),
+              "contract-remove-old": ("contract-remove-old-observation", "release-observation.json", "release-observation.sig"),
+              "external-beta": ("external-beta-observation", "observed-beta.json", "observed-beta.sig"),
+              "rollout-review-05": ("rollout-review-05-observation", "observed-phase-05.json", "observed-phase-05.sig"),
+              "rollout-review-25": ("rollout-review-25-observation", "observed-phase-25.json", "observed-phase-25.sig"),
+              "rollout-review-50": ("rollout-review-50-observation", "observed-phase-50.json", "observed-phase-50.sig"),
+              "rollout-review-100": ("rollout-review-100-observation", "observed-phase-100.json", "observed-phase-100.sig"),
+              "evidence-disposition": ("evidence-disposition-observation", "release-observation.json", "release-observation.sig"),
+              "incident-comms": ("incident-comms-observation", "release-observation.json", "release-observation.sig"),
+              "internal-alpha": ("internal-alpha-observation", "release-observation.json", "release-observation.sig"),
+              "metadata-review": ("metadata-review-observation", "release-observation.json", "release-observation.sig"),
+              "migration-predeploy": ("migration-predeploy-observation", "release-observation.json", "release-observation.sig"),
+              "compat-synthetics": ("compat-synthetics-observation", "release-observation.json", "release-observation.sig"),
+              "pitr-drill": ("pitr-observation", "release-observation.json", "release-observation.sig"),
+              "postrelease-review": ("postrelease-review-observation", "release-observation.json", "release-observation.sig"),
+              "rc-auth-archive": ("rc-auth-archive-observation", "release-observation.json", "release-observation.sig"),
+              "rc-auth-server": ("rc-auth-server-observation", "release-observation.json", "release-observation.sig"),
+              "rollback-tabletop": ("rollback-tabletop-observation", "release-observation.json", "release-observation.sig"),
+              "rollout-1pct": ("rollout-1pct-observation", "release-observation.json", "release-observation.sig"),
+              "rollout-phase-05": ("rollout-phase-05-observation", "release-observation.json", "release-observation.sig"),
+              "rollout-phase-25": ("rollout-phase-25-observation", "release-observation.json", "release-observation.sig"),
+              "rollout-phase-50": ("rollout-phase-50-observation", "release-observation.json", "release-observation.sig"),
+              "rollout-phase-100": ("rollout-phase-100-observation", "release-observation.json", "release-observation.sig"),
+              "threshold-ratification": ("threshold-ratification-source", "threshold-ratification.json", "threshold-ratification.sig"),
+          }
+          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          token = os.environ.get("GITHUB_TOKEN", "")
+          gate = os.environ.get("RELEASE_GATE", "")
+          commit = os.environ.get("GITHUB_SHA", "")
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          consumer_run_id = os.environ.get("GITHUB_RUN_ID", "")
+          if (
+              gate not in expected_sources
+              or not token
+              or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+              or not re.fullmatch(r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", tag)
+              or os.environ.get("GITHUB_REF_TYPE") != "tag"
+              or os.environ.get("GITHUB_REF") != f"refs/tags/{tag}"
+              or not re.fullmatch(r"[a-f0-9]{40}(?:[a-f0-9]{24})?", commit)
+              or not re.fullmatch(r"[1-9][0-9]{0,19}", consumer_run_id)
+          ):
+              fail("protected source context is invalid")
+          try:
+              sources = json.loads(os.environ.get("RELEASE_PROTECTED_SOURCE_ARTIFACTS", "").encode("utf-8", "strict").decode("utf-8", "strict"), object_pairs_hook=reject_duplicates)
+          except (UnicodeDecodeError, json.JSONDecodeError):
+              fail("protected source input is invalid")
+          if not isinstance(sources, list) or len(sources) != 1:
+              fail("protected source input set is incomplete")
+          source = sources[0]
+          if not isinstance(source, dict) or set(source) != {"runId", "artifactName", "artifactDigest", "documentSHA256", "signatureSHA256"}:
+              fail("protected source input is malformed")
+          base_name, document_name, signature_name = expected_sources[gate]
+          expected_name = f"{base_name}-{commit}"
+          producer_run_id = source.get("runId")
+          artifact_digest = source.get("artifactDigest")
+          document_digest = source.get("documentSHA256")
+          signature_digest = source.get("signatureSHA256")
+          if (
+              not isinstance(producer_run_id, str)
+              or not re.fullmatch(r"[1-9][0-9]{0,19}", producer_run_id)
+              or producer_run_id == consumer_run_id
+              or source.get("artifactName") != expected_name
+              or not isinstance(artifact_digest, str)
+              or not re.fullmatch(r"sha256:[a-f0-9]{64}", artifact_digest)
+              or not isinstance(document_digest, str)
+              or not re.fullmatch(r"[a-f0-9]{64}", document_digest)
+              or not isinstance(signature_digest, str)
+              or not re.fullmatch(r"[a-f0-9]{64}", signature_digest)
+          ):
+              fail("protected source input does not bind the selected gate")
+          run_request = urllib.request.Request(
+              f"https://api.github.com/repos/{repository}/actions/runs/{producer_run_id}",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {token}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          try:
+              with urllib.request.urlopen(run_request, timeout=30) as response:
+                  producer_run = json.loads(
+                      response.read(512 * 1024 + 1).decode("utf-8", "strict"),
+                      object_pairs_hook=reject_duplicates,
+                  )
+          except (OSError, urllib.error.HTTPError, UnicodeDecodeError, json.JSONDecodeError):
+              fail("protected source producer run lookup failed")
+          if (
+              not isinstance(producer_run, dict)
+              or producer_run.get("event") != "workflow_dispatch"
+              or producer_run.get("head_sha") != commit
+              or producer_run.get("head_branch") != os.environ.get("GITHUB_REF_NAME")
+              or producer_run.get("name") != "Release Evidence"
+              or not isinstance(producer_run.get("path"), str)
+              or not producer_run["path"].startswith(".github/workflows/release-evidence.yml@")
+              or producer_run.get("status") != "completed"
+              or producer_run.get("conclusion") != "success"
+          ):
+              fail("protected source producer run is cross-lineage or incomplete")
+          jobs_request = urllib.request.Request(
+              f"https://api.github.com/repos/{repository}/actions/runs/{producer_run_id}/jobs?per_page=100",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {token}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          try:
+              with urllib.request.urlopen(jobs_request, timeout=30) as response:
+                  raw_jobs = response.read(2 * 1024 * 1024 + 1)
+                  if response.status != 200 or len(raw_jobs) > 2 * 1024 * 1024:
+                      fail("protected source producer job lookup failed")
+                  jobs = json.loads(raw_jobs.decode("utf-8", "strict"), object_pairs_hook=reject_duplicates)
+          except (OSError, urllib.error.HTTPError, UnicodeDecodeError, json.JSONDecodeError):
+              fail("protected source producer job lookup failed")
+          matching_jobs = [
+              job for job in jobs.get("jobs", [])
+              if isinstance(job, dict)
+              and job.get("name") == "publish-protected-source"
+              and job.get("status") == "completed"
+              and job.get("conclusion") == "success"
+          ] if isinstance(jobs, dict) else []
+          if len(matching_jobs) != 1 or type(matching_jobs[0].get("id")) is not int or matching_jobs[0]["id"] <= 0:
+              fail("protected source producer job is missing or incomplete")
+          producer_job_id = matching_jobs[0]["id"]
+          request = urllib.request.Request(
+              f"https://api.github.com/repos/{repository}/actions/runs/{producer_run_id}/artifacts?per_page=100",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {token}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  raw = response.read(2 * 1024 * 1024 + 1)
+                  artifacts = json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=reject_duplicates)
+          except (OSError, urllib.error.HTTPError, UnicodeDecodeError, json.JSONDecodeError):
+              fail("protected source artifact lookup failed")
+          candidates = [
+              artifact for artifact in artifacts.get("artifacts", [])
+              if isinstance(artifact, dict) and artifact.get("name") == expected_name
+          ] if isinstance(artifacts, dict) else []
+          if len(candidates) != 1:
+              fail("protected source artifact is missing or ambiguous")
+          artifact = candidates[0]
+          archive_url = artifact.get("archive_download_url")
+          if (
+              artifact.get("expired") is not False
+              or artifact.get("digest") != artifact_digest
+              or not isinstance(archive_url, str)
+              or not archive_url.startswith(f"https://api.github.com/repos/{repository}/actions/artifacts/")
+              or not archive_url.endswith("/zip")
+          ):
+              fail("protected source artifact digest attestation is invalid")
+          download_request = urllib.request.Request(
+              archive_url,
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {token}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          try:
+              with urllib.request.urlopen(download_request, timeout=30) as response:
+                  archive_bytes = response.read(16 * 1024 * 1024 + 1)
+              if not archive_bytes or len(archive_bytes) > 16 * 1024 * 1024:
+                  fail("protected source archive is empty or too large")
+              with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+                  members = archive.infolist()
+                  expected_members = {document_name, signature_name}
+                  if gate == "threshold-ratification":
+                      expected_members.update({"threshold-approval.json", "threshold-approval.json.sha256"})
+                  if {member.filename for member in members} != expected_members:
+                      fail("protected source archive contents are not exact")
+                  for member in members:
+                      if member.is_dir() or member.file_size <= 0 or member.file_size > 1024 * 1024:
+                          fail("protected source archive member is unsafe")
+                      mode = member.external_attr >> 16
+                      if stat.S_ISLNK(mode) or "/" in member.filename or "\\" in member.filename:
+                          fail("protected source archive member is unsafe")
+                      destination = Path(os.environ["RUNNER_TEMP"], member.filename)
+                      descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                      with os.fdopen(descriptor, "wb") as output:
+                          output.write(archive.read(member))
+          except (OSError, urllib.error.HTTPError, zipfile.BadZipFile):
+              fail("protected source artifact download failed")
+          for name, expected_digest in ((document_name, document_digest), (signature_name, signature_digest)):
+              path = Path(os.environ["RUNNER_TEMP"], name)
+              try:
+                  metadata = path.lstat()
+              except OSError:
+                  fail("protected source artifact file is missing")
+              if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode) or metadata.st_size <= 0:
+                  fail("protected source artifact file is unsafe")
+              if hashlib.sha256(path.read_bytes()).hexdigest() != expected_digest:
+                  fail("protected source file digest attestation is invalid")
+          try:
+              public_key_environment = (
+                  "THRESHOLD_SOURCE_PUBLIC_KEY_BASE64"
+                  if gate == "threshold-ratification"
+                  else "OBSERVATION_SOURCE_PUBLIC_KEY_BASE64"
+              )
+              public_key = base64.b64decode(os.environ.get(public_key_environment, ""), validate=True)
+          except ValueError:
+              fail("protected source public key is invalid")
+          if len(public_key) < 64 or b"BEGIN PUBLIC KEY" not in public_key:
+              fail("protected source public key is invalid")
+          try:
+              with tempfile.TemporaryDirectory(prefix="release-source-verify-") as directory:
+                  key_path = Path(directory, "source-public.pem")
+                  key_path.write_bytes(public_key)
+                  result = subprocess.run(
+                      [
+                          "openssl", "pkeyutl", "-verify", "-pubin", "-inkey", str(key_path),
+                          "-rawin", "-in", str(Path(os.environ["RUNNER_TEMP"], document_name)),
+                          "-sigfile", str(Path(os.environ["RUNNER_TEMP"], signature_name)),
+                      ],
+                      check=False,
+                      stdin=subprocess.DEVNULL,
+                      stdout=subprocess.PIPE,
+                      stderr=subprocess.PIPE,
+                      timeout=30,
+                  )
+          except (OSError, subprocess.TimeoutExpired):
+              fail("protected source signature verification failed")
+          if result.returncode != 0:
+              fail("protected source signature verification failed")
+          if gate == "threshold-ratification":
+              approval_destination = Path("Evidence/runtime/approvals/threshold.json")
+              approval_destination.parent.mkdir(parents=True, exist_ok=True)
+              approval_source = Path(os.environ["RUNNER_TEMP"], "threshold-approval.json")
+              approval_sidecar_source = Path(os.environ["RUNNER_TEMP"], "threshold-approval.json.sha256")
+              approval_payload = approval_source.read_bytes()
+              approval_digest = hashlib.sha256(approval_payload).hexdigest()
+              if approval_sidecar_source.read_bytes() != f"{approval_digest}  {approval_destination.as_posix()}\n".encode("ascii"):
+                  fail("threshold approval source is invalid")
+              for destination, payload in (
+                  (approval_destination, approval_payload),
+                  (Path(f"{approval_destination}.sha256"), approval_sidecar_source.read_bytes()),
+              ):
+                  descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                  with os.fdopen(descriptor, "wb") as output:
+                      output.write(payload)
+                      output.flush()
+                      os.fsync(output.fileno())
+          receipt = {
+              "schemaVersion": 1,
+              "artifactType": "protected-release-source-receipt",
+              "targetGate": gate,
+              "repository": repository,
+              "tag": tag,
+              "commit": commit,
+              "consumerRunId": consumer_run_id,
+              "producerRunId": producer_run_id,
+              "producerJob": "publish-protected-source",
+              "producerJobId": producer_job_id,
+              "artifactLabel": expected_name,
+              "artifactDigest": artifact_digest,
+              "documentFile": document_name,
+              "documentSHA256": document_digest,
+              "signatureFile": signature_name,
+              "signatureSHA256": signature_digest,
+          }
+          receipt_path = Path(os.environ["RUNNER_TEMP"], "release-protected-source-receipt.json")
+          receipt_data = json.dumps(receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii") + b"\n"
+          descriptor = os.open(receipt_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(descriptor, "wb") as output:
+              output.write(receipt_data)
+              output.flush()
+              os.fsync(output.fileno())
+          floor_destinations = {
+              "external-beta": "Evidence/manifests/floor-beta.json",
+              "rollout-review-05": "Evidence/manifests/floor-phase-05.json",
+              "rollout-review-25": "Evidence/manifests/floor-phase-25.json",
+              "rollout-review-50": "Evidence/manifests/floor-phase-50.json",
+              "rollout-review-100": "Evidence/manifests/floor-phase-100.json",
+          }
+          if gate in floor_destinations:
+              destination = Path(floor_destinations[gate])
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              if destination.exists() or Path(f"{destination}.sha256").exists():
+                  fail("runtime floor source destination already exists")
+              payload = Path(os.environ["RUNNER_TEMP"], document_name).read_bytes()
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(payload)
+                  output.flush()
+                  os.fsync(output.fileno())
+              digest = hashlib.sha256(payload).hexdigest()
+              sidecar_path = Path(f"{destination}.sha256")
+              descriptor = os.open(sidecar_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(f"{digest}  {destination.as_posix()}\n".encode("ascii"))
+                  output.flush()
+                  os.fsync(output.fileno())
+          PY
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-004
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "internal-alpha-${{ github.sha }}"
+          path: "Evidence/runtime/REL-004.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  migration-predeploy:
+    name: migration-predeploy
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'migration-predeploy' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: &transition_predeploy
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-predeploy.json
+      HIKER_RELEASE_RPC_SHA256: ${{ vars.HIKER_RELEASE_RPC_SHA256 }}
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+      HIKER_RELEASE_APPROVAL_ISSUE_URL: ${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - name: Collect immutable three-role release approvals
+        shell: bash
+        run: |
+          set -euo pipefail
+          Scripts/release/collect-role-approvals.sh \
+            --gate predeploy \
+            --issue-url "$HIKER_RELEASE_APPROVAL_ISSUE_URL" \
+            --tag "$GITHUB_REF_NAME" \
+            --commit "$GITHUB_SHA" \
+            --manifest-sha "$HIKER_RELEASE_OBSERVED_INPUT_SHA" \
+            --transition predeploy-disabled \
+            --metric-sha "$HIKER_RELEASE_PREVIOUS_EVENT_SHA" \
+            --output Evidence/runtime/approvals/predeploy.json
+      - &provision_release_rpc
+        name: Provision SHA-attested protected release RPC helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "Scripts/release/hiker-release-rpc" "$RUNNER_TEMP/hiker-release-rpc" <<'PY'
+          import hashlib
+          import os
+          import re
+          import stat
+          import sys
+          from pathlib import Path
+
+          source = Path(sys.argv[1])
+          staged = Path(sys.argv[2])
+          expected = os.environ.get("HIKER_RELEASE_RPC_SHA256", "")
+          if not re.fullmatch(r"[a-f0-9]{64}", expected):
+              raise SystemExit("protected release RPC helper digest is unavailable")
+          try:
+              metadata = source.lstat()
+          except OSError as error:
+              raise SystemExit("protected release RPC helper is unavailable") from error
+          if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+              raise SystemExit("protected release RPC helper is unsafe")
+          payload = source.read_bytes()
+          if not payload or hashlib.sha256(payload).hexdigest() != expected:
+              raise SystemExit("protected release RPC helper digest does not match")
+          descriptor = os.open(staged, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o755)
+          with os.fdopen(descriptor, "wb") as output:
+              output.write(payload)
+              output.flush()
+              os.fsync(output.fileno())
+          PY
+          sudo install -o root -g root -m 755 "$RUNNER_TEMP/hiker-release-rpc" /usr/local/bin/hiker-release-rpc
+          python3 - "/usr/local/bin/hiker-release-rpc" <<'PY'
+          import hashlib
+          import os
+          import stat
+          import sys
+          from pathlib import Path
+
+          target = Path(sys.argv[1])
+          expected = os.environ["HIKER_RELEASE_RPC_SHA256"]
+          metadata = target.lstat()
+          if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode) or not (metadata.st_mode & stat.S_IXUSR):
+              raise SystemExit("protected release RPC helper installation is unsafe")
+          if hashlib.sha256(target.read_bytes()).hexdigest() != expected:
+              raise SystemExit("protected release RPC helper installation digest does not match")
+          PY
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-002
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "migration-predeploy-${{ github.sha }}"
+          path: "Evidence/runtime/REL-002.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  compat-synthetics:
+    name: compat-synthetics
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'compat-synthetics' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env:
+      <<: *transition_predeploy
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-compatibility.json
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - &collect_release_approvals
+        name: Collect immutable three-role release approvals
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$GITHUB_JOB" in
+            migration-predeploy) gate=predeploy; transition=predeploy-disabled ;;
+            compat-synthetics) gate=compatibility; transition=compatibility ;;
+            pitr-drill) gate=pitr-proof; transition=pitr-proof ;;
+            rollout-1pct) gate=activate-1pct; transition=activate-1pct ;;
+            rollout-phase-05) gate=phase-05; transition=phase-5 ;;
+            rollout-phase-25) gate=phase-25; transition=phase-25 ;;
+            rollout-phase-50) gate=phase-50; transition=phase-50 ;;
+            rollout-phase-100) gate=phase-100; transition=phase-100 ;;
+            contract-remove-old) gate=contract; transition=contract-remove-old ;;
+            *) echo "unsupported release approval job" >&2; exit 1 ;;
+          esac
+          Scripts/release/collect-role-approvals.sh \
+            --gate "$gate" \
+            --issue-url "$HIKER_RELEASE_APPROVAL_ISSUE_URL" \
+            --tag "$GITHUB_REF_NAME" \
+            --commit "$GITHUB_SHA" \
+            --manifest-sha "$HIKER_RELEASE_OBSERVED_INPUT_SHA" \
+            --transition "$transition" \
+            --metric-sha "$HIKER_RELEASE_PREVIOUS_EVENT_SHA" \
+            --output "Evidence/runtime/approvals/$gate.json"
+      - *provision_release_rpc
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-003
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "compat-synthetics-${{ github.sha }}"
+          path: "Evidence/runtime/REL-003.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  threshold-ratification:
+    name: threshold-ratification
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'threshold-ratification' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_THRESHOLD_PATH: ${{ runner.temp }}/threshold-ratification.json
+      HIKER_RELEASE_THRESHOLD_SIGNATURE_PATH: ${{ runner.temp }}/threshold-ratification.sig
+      HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_THRESHOLD_PUBLIC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OPS-005
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "threshold-ratification-${{ github.sha }}"
+          path: "Evidence/runtime/OPS-005.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  external-beta:
+    name: external-beta
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'external-beta' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: &beta_floor
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-beta.json
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-005
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "external-beta-${{ github.sha }}"
+          path: "Evidence/runtime/REL-005.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  metadata-review:
+    name: metadata-review
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'metadata-review' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: &signed_production
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
+      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-006
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "metadata-review-${{ github.sha }}"
+          path: "Evidence/runtime/REL-006.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  pitr-drill:
+    name: pitr-drill
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'pitr-drill' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env:
+      <<: *transition_predeploy
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-pitr.json
+      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
+      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-008
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "pitr-drill-${{ github.sha }}"
+          path: "Evidence/runtime/REL-008.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  kill-switch-drill:
+    name: kill-switch-drill
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'kill-switch-drill' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-009
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "kill-switch-drill-${{ github.sha }}"
+          path: "Evidence/runtime/REL-009.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rc-auth-server:
+    name: rc-auth-server
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rc-auth-server' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-RC-SERVER
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rc-auth-server-${{ github.sha }}"
+          path: "Evidence/runtime/AUTH-005-RC-SERVER.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rc-auth-archive:
+    name: rc-auth-archive
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rc-auth-archive' && inputs.confirm_protected_gate
+    runs-on: macos-15
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-RC-ARCHIVE
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rc-auth-archive-${{ github.sha }}"
+          path: "Evidence/runtime/AUTH-005-RC-ARCHIVE.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rc-auth-aggregate:
+    name: rc-auth-aggregate
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rc-auth-aggregate' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-RC
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rc-auth-aggregate-${{ github.sha }}"
+          path: "Evidence/runtime/AUTH-005-RC.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  performance:
+    name: performance
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'performance' && inputs.confirm_protected_gate
+    runs-on: macos-15
+    environment: production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PERF-001
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "performance-${{ github.sha }}"
+          path: "Evidence/tests/PERF-001.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rc-freeze:
+    name: rc-freeze
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rc-freeze' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-007
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rc-freeze-${{ github.sha }}"
+          path: "Evidence/runtime/REL-007.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  alert-drill:
+    name: alert-drill
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'alert-drill' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OPS-003
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "alert-drill-${{ github.sha }}"
+          path: "Evidence/runtime/OPS-003.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  evidence-disposition:
+    name: evidence-disposition
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'evidence-disposition' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OPS-004
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "evidence-disposition-${{ github.sha }}"
+          path: "Evidence/runtime/OPS-004.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  m6-exit:
+    name: m6-exit
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'm6-exit' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env:
+      RELEASE_PROTECTED_ENVIRONMENT: production
+      RELEASE_APPROVALS_TOKEN: ${{ secrets.RELEASE_APPROVALS_TOKEN }}
+      RELEASE_PRODUCT_TEAM_ID: ${{ vars.RELEASE_PRODUCT_TEAM_ID }}
+      RELEASE_PRODUCT_TEAM_SLUG: ${{ vars.RELEASE_PRODUCT_TEAM_SLUG }}
+      RELEASE_SECURITY_TEAM_ID: ${{ vars.RELEASE_SECURITY_TEAM_ID }}
+      RELEASE_SECURITY_TEAM_SLUG: ${{ vars.RELEASE_SECURITY_TEAM_SLUG }}
+      RELEASE_OPS_TEAM_ID: ${{ vars.RELEASE_OPS_TEAM_ID }}
+      RELEASE_OPS_TEAM_SLUG: ${{ vars.RELEASE_OPS_TEAM_SLUG }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - name: Collect M6-EXIT three-role approval
+        shell: bash
+        run: |
+          set -euo pipefail
+          input_hashes="$(python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          paths = {
+              "perfSHA256": "Evidence/tests/PERF-001.json",
+              "ops003SHA256": "Evidence/runtime/OPS-003.json",
+              "ops004SHA256": "Evidence/runtime/OPS-004.json",
+              "betaSHA256": "Evidence/runtime/REL-005.json",
+              "thresholdSHA256": "Evidence/runtime/OPS-005.json",
+              "authSHA256": "Evidence/runtime/AUTH-005-RC.json",
+          }
+          print(json.dumps({key: hashlib.sha256(Path(path).read_bytes()).hexdigest() for key, path in paths.items()}, sort_keys=True, separators=(",", ":")))
+          PY
+          )"
+          beta_sha="$(python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          print(hashlib.sha256(Path("Evidence/runtime/REL-005.json").read_bytes()).hexdigest())
+          PY
+          )"
+          Scripts/release/collect-role-approvals.sh \
+            --gate m6-exit \
+            --issue-url "${{ vars.HIKER_RELEASE_APPROVAL_ISSUE_URL }}" \
+            --tag "$GITHUB_REF_NAME" \
+            --commit "$GITHUB_SHA" \
+            --manifest-sha "$HIKER_RELEASE_RC_MANIFEST_SHA" \
+            --transition m6-exit \
+            --metric-sha "$beta_sha" \
+            --output Evidence/runtime/approvals/m6-exit.json \
+            --input-hashes-json "$input_hashes"
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id M6-EXIT
+      - &validate_m6_admission
+        name: Invoke validate-release-lineage.py for immutable M6-EXIT admission
+        shell: bash
+        env:
+          HIKER_RELEASE_REQUIRED_M6_EXIT_SHA256: ${{ inputs.m6_exit_sha256 }}
+          RELEASE_LINEAGE_GATE: ${{ inputs.release_gate }}
+        run: |
+          set -euo pipefail
+          python3 - "Scripts/release/validate-release-lineage.py" <<'PY'
+          import hashlib
+          import importlib.util
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          expected = os.environ.get("HIKER_RELEASE_REQUIRED_M6_EXIT_SHA256", "")
+          gate = os.environ.get("RELEASE_LINEAGE_GATE", "")
+          if expected:
+              if not re.fullmatch(r"[a-f0-9]{64}", expected):
+                  raise SystemExit("required M6-EXIT SHA-256 is invalid")
+          elif gate != "m6-exit":
+              raise SystemExit("every M7 action requires the exact M6-EXIT SHA-256")
+          script = Path(sys.argv[1]).resolve()
+          spec = importlib.util.spec_from_file_location("protected_release_lineage", script)
+          if spec is None or spec.loader is None:
+              raise SystemExit("validate-release-lineage.py is unavailable")
+          validator = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(validator)
+          root = validator.repository_root()
+          _record, digest = validator.verify_m6_exit(root, "Evidence/runtime/M6-EXIT.json")
+          if expected and digest != expected:
+              raise SystemExit("M6-EXIT digest does not match the protected admission input")
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "m6-exit-${{ github.sha }}"
+          path: "Evidence/runtime/M6-EXIT.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rollout-1pct:
+    name: rollout-1pct
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-1pct' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: &phase_transition
+      <<: *transition_predeploy
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-activate-1pct.json
+      HIKER_RELEASE_OBSERVATION_PATH: ${{ runner.temp }}/release-observation.json
+      HIKER_RELEASE_OBSERVATION_SIGNATURE_PATH: ${{ runner.temp }}/release-observation.sig
+      HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64: ${{ vars.HIKER_RELEASE_OBSERVATION_PUBLIC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-010
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-1pct-${{ github.sha }}"
+          path: "Evidence/runtime/REL-010.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rollout-review-05:
+    name: rollout-review-05
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-review-05' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production, HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-phase-05.json }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *validate_m6_admission
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-011-05
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-review-05-${{ github.sha }}"
+          path: "Evidence/runtime/REL-011-05.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rollout-phase-05:
+    name: rollout-phase-05
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-05' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env:
+      <<: *phase_transition
+      HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-05.json
+      HIKER_RELEASE_PHASE_FLOOR_SHA: ${{ vars.HIKER_RELEASE_PHASE_FLOOR_05_SHA }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-PHASE-05
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-phase-05-${{ github.sha }}"
+          path: "Evidence/runtime/REL-PHASE-05.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rollout-review-25:
+    name: rollout-review-25
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-review-25' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production, HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-phase-25.json }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *validate_m6_admission
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-011-25
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-review-25-${{ github.sha }}"
+          path: "Evidence/runtime/REL-011-25.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rollout-phase-25:
+    name: rollout-phase-25
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-25' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-25.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_25_SHA }}" }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-PHASE-25
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-phase-25-${{ github.sha }}"
+          path: "Evidence/runtime/REL-PHASE-25.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+
+  rollout-review-50:
+    name: rollout-review-50
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-review-50' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production, HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-phase-50.json }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *validate_m6_admission
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-011-50
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-review-50-${{ github.sha }}"
+          path: "Evidence/runtime/REL-011-50.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rollout-phase-50:
+    name: rollout-phase-50
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-50' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-50.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_50_SHA }}" }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-PHASE-50
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-phase-50-${{ github.sha }}"
+          path: "Evidence/runtime/REL-PHASE-50.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rollout-review-100:
+    name: rollout-review-100
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-review-100' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: { RELEASE_PROTECTED_ENVIRONMENT: production, HIKER_RELEASE_FLOOR_SOURCE_MANIFEST: Evidence/manifests/floor-phase-100.json }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *validate_m6_admission
+      - *verify_protected_source
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-011-100
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-review-100-${{ github.sha }}"
+          path: "Evidence/runtime/REL-011-100.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rollout-phase-100:
+    name: rollout-phase-100
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollout-phase-100' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-phase-100.json, HIKER_RELEASE_PHASE_FLOOR_SHA: "${{ vars.HIKER_RELEASE_PHASE_FLOOR_100_SHA }}" }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - *provision_release_rpc
+      - *collect_release_approvals
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-PHASE-100
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollout-phase-100-${{ github.sha }}"
+          path: "Evidence/runtime/REL-PHASE-100.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  rollback-tabletop:
+    name: rollback-tabletop
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'rollback-tabletop' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-012
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "rollback-tabletop-${{ github.sha }}"
+          path: "Evidence/runtime/REL-012.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  incident-comms:
+    name: incident-comms
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'incident-comms' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-013
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "incident-comms-${{ github.sha }}"
+          path: "Evidence/runtime/REL-013.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  postrelease-review:
+    name: postrelease-review
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'postrelease-review' && inputs.confirm_protected_gate
+    runs-on: ubuntu-24.04
+    environment: production
+    env: *signed_production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-014
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "postrelease-review-${{ github.sha }}"
+          path: "Evidence/runtime/REL-014.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage
+  contract-remove-old:
+    name: contract-remove-old
+    needs: protected-predecessor
+    if: github.event_name == 'workflow_dispatch' && inputs.release_gate == 'contract-remove-old' && inputs.confirm_protected_gate
+    runs-on: [self-hosted, linux, release-controller]
+    environment: production
+    env: { <<: *phase_transition, HIKER_RELEASE_OBSERVED_INPUT_MANIFEST: Evidence/manifests/observed-contract.json }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.ref }}"
+          fetch-depth: 0
+          persist-credentials: false
+      - *restore_protected_predecessor
+      - *verify_protected_source
+      - *validate_m6_admission
+      - name: Validate complete pre-contract release lineage
+        run: >-
+          python3 Scripts/release/validate-release-lineage.py validate-pre-contract
+          --readiness Evidence/manifests/m6-readiness.json
+          --rc Evidence/manifests/rc.json
+          --m6-exit Evidence/runtime/M6-EXIT.json
+          --rel-010 Evidence/runtime/REL-010.json
+          --phase-05 Evidence/runtime/REL-PHASE-05.json
+          --phase-25 Evidence/runtime/REL-PHASE-25.json
+          --phase-50 Evidence/runtime/REL-PHASE-50.json
+          --phase-100 Evidence/runtime/REL-PHASE-100.json
+          --postrelease Evidence/runtime/REL-014.json
+      - *collect_release_approvals
+      - *provision_release_rpc
+      - run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id REL-CONTRACT
+      - name: Validate final release lineage
+        run: >-
+          python3 Scripts/release/validate-release-lineage.py validate
+          --readiness Evidence/manifests/m6-readiness.json
+          --rc Evidence/manifests/rc.json
+          --m6-exit Evidence/runtime/M6-EXIT.json
+          --rel-010 Evidence/runtime/REL-010.json
+          --phase-05 Evidence/runtime/REL-PHASE-05.json
+          --phase-25 Evidence/runtime/REL-PHASE-25.json
+          --phase-50 Evidence/runtime/REL-PHASE-50.json
+          --phase-100 Evidence/runtime/REL-PHASE-100.json
+          --postrelease Evidence/runtime/REL-014.json
+          --contract Evidence/runtime/REL-CONTRACT.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "contract-remove-old-${{ github.sha }}"
+          path: "Evidence/runtime/REL-CONTRACT.json*"
+          if-no-files-found: error
+          retention-days: 90
+      - *stage_release_lineage
+      - *upload_release_lineage

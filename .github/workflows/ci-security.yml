@@ -1,0 +1,545 @@
+name: Security CI
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      run_provider_gate:
+        description: Run the protected staging provider gate.
+        required: true
+        default: false
+        type: boolean
+      run_auth_preflight:
+        description: Run the protected AUTH-005 staging preflight evidence jobs.
+        required: true
+        default: false
+        type: boolean
+      auth_preflight_build_digest:
+        description: SHA-256 digest of the exact signed staging Release build.
+        required: false
+        default: ""
+        type: string
+      run_pitr_restore:
+        description: Run the protected staging PITR backup/restore evidence job.
+        required: true
+        default: false
+        type: boolean
+      pitr_restore_build_digest:
+        description: SHA-256 digest of the exact staging build deployed before the PITR restore point.
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-security-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  evidence-bijection-negative:
+    name: evidence-bijection-negative
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Exercise evidence bijection rejection paths
+        run: >-
+          Scripts/ci/test-evidence-bijection-negative.sh
+          --profiles Docs/evidence/evidence-profiles.yml
+          --valid Docs/evidence/fixtures/bijection-valid.json
+          --invalid-dir Docs/evidence/fixtures/bijection-invalid
+          --validator Scripts/ci/validate-evidence-bijection.sh
+          --output Evidence/tests/EVIDENCE-BIJECTION-NEGATIVE.json
+      - name: Upload bijection evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-bijection-negative-${{ github.sha }}
+          path: Evidence/tests/EVIDENCE-BIJECTION-NEGATIVE.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  toolchain-provider:
+    name: toolchain-provider
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run toolchain provider evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OPS-001
+      - name: Upload toolchain provider evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: toolchain-provider-evidence-${{ github.sha }}
+          path: Evidence/runtime/OPS-001.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  environment-provider-gate:
+    name: environment-provider-gate
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_provider_gate
+    runs-on: macos-26
+    environment: staging
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+      HIKER_PROVIDER_GATE_INPUT: ${{ runner.temp }}/hiker-provider-gate.json
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Materialize protected provider approval
+        shell: bash
+        env:
+          HIKER_PROVIDER_GATE_JSON: ${{ secrets.HIKER_PROVIDER_GATE_JSON }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          value = os.environ.get("HIKER_PROVIDER_GATE_JSON", "")
+          if not value:
+              raise SystemExit("protected provider approval is unavailable")
+          path = Path(os.environ["HIKER_PROVIDER_GATE_INPUT"])
+          descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+              output.write(value)
+          PY
+      - name: Run protected provider gate evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OPS-002
+      - name: Upload protected provider gate evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: environment-provider-gate-evidence-${{ github.sha }}
+          path: Evidence/runtime/OPS-002.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  preflight-auth-server:
+    name: preflight-auth-server
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_auth_preflight
+    runs-on: macos-26
+    environment: staging
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
+      HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
+      HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
+      HIKER_AUTH_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/auth-preflight-server-source.json
+      HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/auth-preflight-server-source.sig
+    steps:
+      - name: Check out signed release tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import protected release tag verification key
+        shell: bash
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+          import subprocess
+
+          encoded = os.environ.get("HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64", "")
+          try:
+              key = base64.b64decode(encoded, validate=True)
+          except ValueError:
+              raise SystemExit("protected release tag key is unavailable")
+          if len(key) < 64 or b"BEGIN PGP PUBLIC KEY BLOCK" not in key:
+              raise SystemExit("protected release tag key is unavailable")
+          home = Path(os.environ["GNUPGHOME"])
+          home.mkdir(mode=0o700)
+          home.chmod(0o700)
+          result = subprocess.run(
+              ["gpg", "--batch", "--import"],
+              input=key,
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          )
+          if result.returncode:
+              raise SystemExit("protected release tag key is unavailable")
+          PY
+      - name: Materialize signed server observation
+        shell: bash
+        env:
+          HIKER_AUTH_PREFLIGHT_SOURCE_B64: ${{ secrets.HIKER_AUTH_PREFLIGHT_SERVER_SOURCE_B64 }}
+          HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_B64: ${{ secrets.HIKER_AUTH_PREFLIGHT_SERVER_SIGNATURE_B64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          values = (
+              ("HIKER_AUTH_PREFLIGHT_SOURCE_B64", "HIKER_AUTH_PREFLIGHT_SOURCE_PATH", 128 * 1024),
+              ("HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_B64", "HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH", 16 * 1024),
+          )
+          temporary = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
+          for source_name, destination_name, limit in values:
+              try:
+                  data = base64.b64decode(os.environ.get(source_name, ""), validate=True)
+              except ValueError:
+                  raise SystemExit("protected signed preflight source is unavailable")
+              destination = Path(os.environ[destination_name])
+              if not data or len(data) > limit or destination.parent != temporary:
+                  raise SystemExit("protected signed preflight source is unavailable")
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(data)
+          PY
+      - name: Run protected server preflight evidence profile
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT }}
+          HIKER_AUTH_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_AUTH_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64 }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-PREFLIGHT-SERVER
+      - name: Upload protected server preflight publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: auth-preflight-server-${{ github.run_id }}
+          path: |
+            Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.json
+            Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.json.sha256
+            Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.commit
+          if-no-files-found: error
+          retention-days: 90
+
+  preflight-auth-archive:
+    name: preflight-auth-archive
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_auth_preflight
+    runs-on: macos-26
+    environment: staging
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
+      HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
+      HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
+      HIKER_AUTH_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/auth-preflight-archive-source.json
+      HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/auth-preflight-archive-source.sig
+    steps:
+      - name: Check out signed release tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import protected release tag verification key
+        shell: bash
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+          import subprocess
+
+          encoded = os.environ.get("HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64", "")
+          try:
+              key = base64.b64decode(encoded, validate=True)
+          except ValueError:
+              raise SystemExit("protected release tag key is unavailable")
+          if len(key) < 64 or b"BEGIN PGP PUBLIC KEY BLOCK" not in key:
+              raise SystemExit("protected release tag key is unavailable")
+          home = Path(os.environ["GNUPGHOME"])
+          home.mkdir(mode=0o700)
+          home.chmod(0o700)
+          result = subprocess.run(
+              ["gpg", "--batch", "--import"],
+              input=key,
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          )
+          if result.returncode:
+              raise SystemExit("protected release tag key is unavailable")
+          PY
+      - name: Materialize signed archive observation
+        shell: bash
+        env:
+          HIKER_AUTH_PREFLIGHT_SOURCE_B64: ${{ secrets.HIKER_AUTH_PREFLIGHT_ARCHIVE_SOURCE_B64 }}
+          HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_B64: ${{ secrets.HIKER_AUTH_PREFLIGHT_ARCHIVE_SIGNATURE_B64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          values = (
+              ("HIKER_AUTH_PREFLIGHT_SOURCE_B64", "HIKER_AUTH_PREFLIGHT_SOURCE_PATH", 128 * 1024),
+              ("HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_B64", "HIKER_AUTH_PREFLIGHT_SOURCE_SIGNATURE_PATH", 16 * 1024),
+          )
+          temporary = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
+          for source_name, destination_name, limit in values:
+              try:
+                  data = base64.b64decode(os.environ.get(source_name, ""), validate=True)
+              except ValueError:
+                  raise SystemExit("protected signed preflight source is unavailable")
+              destination = Path(os.environ[destination_name])
+              if not data or len(data) > limit or destination.parent != temporary:
+                  raise SystemExit("protected signed preflight source is unavailable")
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(data)
+          PY
+      - name: Run protected archive preflight evidence profile
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT }}
+          HIKER_AUTH_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_AUTH_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64 }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-PREFLIGHT-ARCHIVE
+      - name: Upload protected archive preflight publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: auth-preflight-archive-${{ github.run_id }}
+          path: |
+            Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.json
+            Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.json.sha256
+            Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.commit
+          if-no-files-found: error
+          retention-days: 90
+
+  preflight-auth-aggregate:
+    name: preflight-auth-aggregate
+    needs: [preflight-auth-server, preflight-auth-archive]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_auth_preflight
+    runs-on: macos-26
+    environment: staging
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GNUPGHOME: ${{ runner.temp }}/auth-preflight-gnupg
+      HIKER_AUTH_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
+      HIKER_AUTH_PREFLIGHT_BUILD_DIGEST: ${{ inputs.auth_preflight_build_digest }}
+    steps:
+      - name: Check out signed release tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import protected release tag verification key
+        shell: bash
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+          import subprocess
+
+          encoded = os.environ.get("HIKER_AUTH_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64", "")
+          try:
+              key = base64.b64decode(encoded, validate=True)
+          except ValueError:
+              raise SystemExit("protected release tag key is unavailable")
+          if len(key) < 64 or b"BEGIN PGP PUBLIC KEY BLOCK" not in key:
+              raise SystemExit("protected release tag key is unavailable")
+          home = Path(os.environ["GNUPGHOME"])
+          home.mkdir(mode=0o700)
+          home.chmod(0o700)
+          result = subprocess.run(
+              ["gpg", "--batch", "--import"],
+              input=key,
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          )
+          if result.returncode:
+              raise SystemExit("protected release tag key is unavailable")
+          PY
+      - name: Download protected server preflight publication
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: auth-preflight-server-${{ github.run_id }}
+          path: Evidence/runtime
+      - name: Download protected archive preflight publication
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: auth-preflight-archive-${{ github.run_id }}
+          path: Evidence/runtime
+      - name: Run protected aggregate preflight evidence profile
+        env:
+          HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_AUTH_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-005-PREFLIGHT
+      - name: Upload protected aggregate preflight publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: auth-preflight-aggregate-${{ github.run_id }}
+          path: |
+            Evidence/runtime/AUTH-005-PREFLIGHT.json
+            Evidence/runtime/AUTH-005-PREFLIGHT.json.sha256
+            Evidence/runtime/AUTH-005-PREFLIGHT.commit
+          if-no-files-found: error
+          retention-days: 90
+  protected-pitr-restore:
+    name: protected-pitr-restore
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_pitr_restore
+    runs-on: macos-26
+    environment: staging
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GNUPGHOME: ${{ runner.temp }}/pitr-restore-gnupg
+      HIKER_PITR_PREFLIGHT_PROTECTED_ENVIRONMENT: staging
+      HIKER_PITR_PREFLIGHT_BUILD_DIGEST: ${{ inputs.pitr_restore_build_digest }}
+      HIKER_PITR_PREFLIGHT_MIGRATION_SET_SHA256: ${{ vars.HIKER_PITR_PREFLIGHT_MIGRATION_SET_SHA256 }}
+      HIKER_PITR_PREFLIGHT_BACKUP_SHA256: ${{ vars.HIKER_PITR_PREFLIGHT_BACKUP_SHA256 }}
+      HIKER_PITR_PREFLIGHT_DATASET_SHA256: 1032070f3d7ea12ae68be5859bb1eef353ab815da763f23f8940527b39783cae
+      HIKER_PITR_PREFLIGHT_SOURCE_PATH: ${{ runner.temp }}/pitr-restore-source.json
+      HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_PATH: ${{ runner.temp }}/pitr-restore-source.sig
+    steps:
+      - name: Check out signed release tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import protected PITR release tag verification key
+        shell: bash
+        env:
+          HIKER_PITR_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64: ${{ vars.HIKER_PITR_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+          import subprocess
+
+          encoded = os.environ.get("HIKER_PITR_PREFLIGHT_RELEASE_TAG_PUBLIC_KEY_BASE64", "")
+          try:
+              key = base64.b64decode(encoded, validate=True)
+          except ValueError:
+              raise SystemExit("protected PITR release tag key is unavailable")
+          if len(key) < 64 or b"BEGIN PGP PUBLIC KEY BLOCK" not in key:
+              raise SystemExit("protected PITR release tag key is unavailable")
+          home = Path(os.environ["GNUPGHOME"])
+          home.mkdir(mode=0o700)
+          home.chmod(0o700)
+          result = subprocess.run(
+              ["gpg", "--batch", "--import"],
+              input=key,
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          )
+          if result.returncode:
+              raise SystemExit("protected PITR release tag key is unavailable")
+          PY
+      - name: Materialize signed staging PITR backup/restore receipt
+        shell: bash
+        env:
+          HIKER_PITR_PREFLIGHT_SOURCE_B64: ${{ secrets.HIKER_PITR_PREFLIGHT_SOURCE_B64 }}
+          HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_B64: ${{ secrets.HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_B64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          values = (
+              ("HIKER_PITR_PREFLIGHT_SOURCE_B64", "HIKER_PITR_PREFLIGHT_SOURCE_PATH", 128 * 1024),
+              ("HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_B64", "HIKER_PITR_PREFLIGHT_SOURCE_SIGNATURE_PATH", 16 * 1024),
+          )
+          temporary = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
+          for source_name, destination_name, limit in values:
+              try:
+                  data = base64.b64decode(os.environ.get(source_name, ""), validate=True)
+              except ValueError:
+                  raise SystemExit("protected signed PITR receipt is unavailable")
+              destination = Path(os.environ[destination_name])
+              if not data or len(data) > limit or destination.parent != temporary:
+                  raise SystemExit("protected signed PITR receipt is unavailable")
+              descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+              with os.fdopen(descriptor, "wb") as output:
+                  output.write(data)
+          PY
+      - name: Run protected PITR restore evidence profile
+        env:
+          HIKER_PITR_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT: ${{ vars.HIKER_PITR_PREFLIGHT_RELEASE_TAG_SIGNING_FINGERPRINT }}
+          HIKER_PITR_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64: ${{ vars.HIKER_PITR_PREFLIGHT_SOURCE_PUBLIC_KEY_BASE64 }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id MIG-005-PROTECTED
+      - name: Upload protected PITR restore publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: protected-pitr-restore-${{ github.run_id }}
+          path: |
+            Evidence/runtime/MIG-005-PROTECTED.json
+            Evidence/runtime/MIG-005-PROTECTED.json.sha256
+            Evidence/runtime/MIG-005-PROTECTED.commit
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,407 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "1.0.0-rc.1",
+  "status": "release_candidate_legacy_mapping",
+  "entries": [
+    {
+      "legacyID": "1",
+      "currentID": "hkr_mtn_4d9852ed3a4678b1dab6400733c8fa77"
+    },
+    {
+      "legacyID": "2",
+      "currentID": "hkr_mtn_da12fca46f317ec9c41a81e52a2e18e9"
+    },
+    {
+      "legacyID": "3",
+      "currentID": "hkr_mtn_1895a6994591470aa491de196849d390"
+    },
+    {
+      "legacyID": "4",
+      "currentID": "hkr_mtn_1cbbeefd7f32312dbfd1d5523cbf3a69"
+    },
+    {
+      "legacyID": "5",
+      "currentID": "hkr_mtn_76303cf5d76bcf421d818bd2dfd1a49e"
+    },
+    {
+      "legacyID": "6",
+      "currentID": "hkr_mtn_4e494489053fbd35d7880a8a56ec2a9d"
+    },
+    {
+      "legacyID": "7",
+      "currentID": "hkr_mtn_8e1938d5ea364530de194a28e63d99eb"
+    },
+    {
+      "legacyID": "8",
+      "currentID": "hkr_mtn_ee3cc21f0f3e388f6d63c88e3ada2abd"
+    },
+    {
+      "legacyID": "9",
+      "currentID": "hkr_mtn_3d1c9ebd0553ed18daa92d583bd7598d"
+    },
+    {
+      "legacyID": "10",
+      "currentID": "hkr_mtn_65d017f11deb1e273315b600bbabc53c"
+    },
+    {
+      "legacyID": "11",
+      "currentID": "hkr_mtn_8a5f383ab63263c9282f1f6bce0bce3d"
+    },
+    {
+      "legacyID": "12",
+      "currentID": "hkr_mtn_63978d735a55babc106935c30a0d13e4"
+    },
+    {
+      "legacyID": "13",
+      "currentID": "hkr_mtn_809d36c86a50aa38d5ec12ea871c3fdf"
+    },
+    {
+      "legacyID": "14",
+      "currentID": "hkr_mtn_1b466671c5f4f324eef899136dfbc0ee"
+    },
+    {
+      "legacyID": "15",
+      "currentID": "hkr_mtn_edd48f640a31b899f6f595b29aa0b885"
+    },
+    {
+      "legacyID": "16",
+      "currentID": "hkr_mtn_61ef2c2e719e99a5579cc3affd650c79"
+    },
+    {
+      "legacyID": "17",
+      "currentID": "hkr_mtn_e7827bf51b55845f06b321b70ec3ef72"
+    },
+    {
+      "legacyID": "18",
+      "currentID": "hkr_mtn_b65d4772cdccf15a563bcabfb5f46985"
+    },
+    {
+      "legacyID": "19",
+      "currentID": "hkr_mtn_d27bc996fa8087ea5c92a254670dbe05"
+    },
+    {
+      "legacyID": "20",
+      "currentID": "hkr_mtn_a2d174a7c909e16051f0e90cd1c42c6e"
+    },
+    {
+      "legacyID": "21",
+      "currentID": "hkr_mtn_467038e42ccccaa8a8749eacf86ea65d"
+    },
+    {
+      "legacyID": "22",
+      "currentID": "hkr_mtn_68cafcb3f909b168a981278cbcdb03e6"
+    },
+    {
+      "legacyID": "23",
+      "currentID": "hkr_mtn_ecba1f30d4a4fe662942319e183978a8"
+    },
+    {
+      "legacyID": "24",
+      "currentID": "hkr_mtn_d41f2b8c00f486169cf95acbbc16694c"
+    },
+    {
+      "legacyID": "25",
+      "currentID": "hkr_mtn_61b836d0d388e1cab93898d9b90d0da6"
+    },
+    {
+      "legacyID": "26",
+      "currentID": "hkr_mtn_87f3f9d80feec9521a6cdc71fc574167"
+    },
+    {
+      "legacyID": "27",
+      "currentID": "hkr_mtn_b53c0c8c8d7c475edd90d140f8789781"
+    },
+    {
+      "legacyID": "28",
+      "currentID": "hkr_mtn_307181fa92ce7939bf38e6685599e0f9"
+    },
+    {
+      "legacyID": "29",
+      "currentID": "hkr_mtn_d9bf5bdf1da4dd26b83837c937c67469"
+    },
+    {
+      "legacyID": "30",
+      "currentID": "hkr_mtn_eafbcea454652ac2c81fa37aabe99746"
+    },
+    {
+      "legacyID": "31",
+      "currentID": "hkr_mtn_7abbf7c922d6912df98032066eaee63b"
+    },
+    {
+      "legacyID": "32",
+      "currentID": "hkr_mtn_f5796f196ee35e8b05915644e038176a"
+    },
+    {
+      "legacyID": "33",
+      "currentID": "hkr_mtn_4cde4ea4f18bff6d3b8f49b9a08ac2fd"
+    },
+    {
+      "legacyID": "34",
+      "currentID": "hkr_mtn_11d4b9d57b2313f1124b743055fddc45"
+    },
+    {
+      "legacyID": "35",
+      "currentID": "hkr_mtn_d6c12829427bcd9e1c2171943c794e5e"
+    },
+    {
+      "legacyID": "36",
+      "currentID": "hkr_mtn_d21bdddcc87c87d1ef6d699fb009c7bb"
+    },
+    {
+      "legacyID": "37",
+      "currentID": "hkr_mtn_44932d6b12bd74476cf6d4e51baeaf70"
+    },
+    {
+      "legacyID": "38",
+      "currentID": "hkr_mtn_55d3a6abbed6fe2be00aeba1c0bef490"
+    },
+    {
+      "legacyID": "39",
+      "currentID": "hkr_mtn_0d72cdcf67b4ba0f681bb6c6edffb75f"
+    },
+    {
+      "legacyID": "40",
+      "currentID": "hkr_mtn_d23084e1f9cbfa154bd34c41842fa35a"
+    },
+    {
+      "legacyID": "41",
+      "currentID": "hkr_mtn_32fce0a4757cfb9da40c1079719b4f06"
+    },
+    {
+      "legacyID": "42",
+      "currentID": "hkr_mtn_8c201dec1c6e05a52b5ceaa3ef4477c4"
+    },
+    {
+      "legacyID": "43",
+      "currentID": "hkr_mtn_2c3d7f44f8118103e33e487c9895f0bf"
+    },
+    {
+      "legacyID": "44",
+      "currentID": "hkr_mtn_e2405b1c8ed8c0b4f5c764d25141ac2a"
+    },
+    {
+      "legacyID": "45",
+      "currentID": "hkr_mtn_dca3857b60e74232d7b3ba35115df4a2"
+    },
+    {
+      "legacyID": "46",
+      "currentID": "hkr_mtn_03f343fae9427a772cc169f1fb3c0dd2"
+    },
+    {
+      "legacyID": "47",
+      "currentID": "hkr_mtn_2f90a6878506b434891af6242acd8587"
+    },
+    {
+      "legacyID": "48",
+      "currentID": "hkr_mtn_6895a251ca9f54d39f0c8426bbe1cd8d"
+    },
+    {
+      "legacyID": "49",
+      "currentID": "hkr_mtn_a020240707c3e29409ca036fd4e867be"
+    },
+    {
+      "legacyID": "50",
+      "currentID": "hkr_mtn_f0cc07def5a52b362bec67e001be3849"
+    },
+    {
+      "legacyID": "51",
+      "currentID": "hkr_mtn_81c00948303956822989fe2476634e70"
+    },
+    {
+      "legacyID": "52",
+      "currentID": "hkr_mtn_6706f2033456c933babd9a5a79bde261"
+    },
+    {
+      "legacyID": "53",
+      "currentID": "hkr_mtn_d3b97b24a362b490d3d5fdc665bad1e5"
+    },
+    {
+      "legacyID": "54",
+      "currentID": "hkr_mtn_8b369a7a102199730ca6cd8050c9b4d9"
+    },
+    {
+      "legacyID": "55",
+      "currentID": "hkr_mtn_6312847e5aac0787a625bc0a609a9f78"
+    },
+    {
+      "legacyID": "56",
+      "currentID": "hkr_mtn_2d4a0c039a34453aaa6d1a5cf527eaeb"
+    },
+    {
+      "legacyID": "57",
+      "currentID": "hkr_mtn_61e9d6b555ad0cb31d3789ea8bba22ee"
+    },
+    {
+      "legacyID": "58",
+      "currentID": "hkr_mtn_8c74de3c828060ec4e2a4c2a023ededa"
+    },
+    {
+      "legacyID": "59",
+      "currentID": "hkr_mtn_82f687a122301e6e14add056b43c8026"
+    },
+    {
+      "legacyID": "60",
+      "currentID": "hkr_mtn_42d2f99ed96fed82b9ab66dd49ad5d1a"
+    },
+    {
+      "legacyID": "61",
+      "currentID": "hkr_mtn_5529324c66baa32f1917d530fe5f3f78"
+    },
+    {
+      "legacyID": "62",
+      "currentID": "hkr_mtn_b1819d12c9009ba804c02cc35881d35b"
+    },
+    {
+      "legacyID": "63",
+      "currentID": "hkr_mtn_c827a95a70da6c57731e0f62813a2566"
+    },
+    {
+      "legacyID": "64",
+      "currentID": "hkr_mtn_58a801722b33b75b9239565fb72b0e95"
+    },
+    {
+      "legacyID": "65",
+      "currentID": "hkr_mtn_7b31006b93233bb96afa738c24ccbbde"
+    },
+    {
+      "legacyID": "66",
+      "currentID": "hkr_mtn_047e20f4449ff877485fb723dd235551"
+    },
+    {
+      "legacyID": "67",
+      "currentID": "hkr_mtn_f892f4699657d7a0d4e95f07b30a01d0"
+    },
+    {
+      "legacyID": "68",
+      "currentID": "hkr_mtn_e7a6e7287a1e76852af412fc3493c3ad"
+    },
+    {
+      "legacyID": "69",
+      "currentID": "hkr_mtn_b65c8b2d458692ad9c38abba3ee78f83"
+    },
+    {
+      "legacyID": "70",
+      "currentID": "hkr_mtn_a16f021472ce944d84ca6a54b2cfcfbc"
+    },
+    {
+      "legacyID": "71",
+      "currentID": "hkr_mtn_a57ecd44a11598ca162402185b54174a"
+    },
+    {
+      "legacyID": "72",
+      "currentID": "hkr_mtn_122937c54d419b1b76f8a466d09e5da9"
+    },
+    {
+      "legacyID": "73",
+      "currentID": "hkr_mtn_3f78c08223a946d9b61e9395b790b9cb"
+    },
+    {
+      "legacyID": "74",
+      "currentID": "hkr_mtn_cafdf3628b0ef8b33775041c8364052e"
+    },
+    {
+      "legacyID": "75",
+      "currentID": "hkr_mtn_6f389a8843894615d3b5d7a4b2a24511"
+    },
+    {
+      "legacyID": "76",
+      "currentID": "hkr_mtn_6c4d0d889c13af5aa41721b9f18224f8"
+    },
+    {
+      "legacyID": "77",
+      "currentID": "hkr_mtn_ddbf15deb04eef64dd8c105fff18bcaa"
+    },
+    {
+      "legacyID": "78",
+      "currentID": "hkr_mtn_cb9a6f374b2315c06ffc069ffe73eea1"
+    },
+    {
+      "legacyID": "79",
+      "currentID": "hkr_mtn_a4efb1bad2d347a5140919900f282760"
+    },
+    {
+      "legacyID": "80",
+      "currentID": "hkr_mtn_3ba23007eae8c2f8581eff5eb37cf002"
+    },
+    {
+      "legacyID": "81",
+      "currentID": "hkr_mtn_74c67615484dba30d6e382c0a6efcd6c"
+    },
+    {
+      "legacyID": "82",
+      "currentID": "hkr_mtn_0beabeda8b5c111c50796a28642c057a"
+    },
+    {
+      "legacyID": "83",
+      "currentID": "hkr_mtn_afdbd43fe716de90059ca2346c5a3613"
+    },
+    {
+      "legacyID": "84",
+      "currentID": "hkr_mtn_3d0d4477decb6f20b5b91b7288632208"
+    },
+    {
+      "legacyID": "85",
+      "currentID": "hkr_mtn_be03b0453dabacb436dd30479f4da72f"
+    },
+    {
+      "legacyID": "86",
+      "currentID": "hkr_mtn_bcc590a68c3ddb62c6cf09669a570fbc"
+    },
+    {
+      "legacyID": "87",
+      "currentID": "hkr_mtn_90a55b037c7189a1c7daa672b51f1180"
+    },
+    {
+      "legacyID": "88",
+      "currentID": "hkr_mtn_e5e4eb4fcdc7be4f10692d706ebfaead"
+    },
+    {
+      "legacyID": "89",
+      "currentID": "hkr_mtn_711f764943dd4a7744660bfecc9cc6db"
+    },
+    {
+      "legacyID": "90",
+      "currentID": "hkr_mtn_65e389e11c6bd3f2841fac70f2e6e40b"
+    },
+    {
+      "legacyID": "91",
+      "currentID": "hkr_mtn_249e20b0c61c55d3f2fb75edf4ba6194"
+    },
+    {
+      "legacyID": "92",
+      "currentID": "hkr_mtn_2499d08b7bf6c09c85c2153a65663ebd"
+    },
+    {
+      "legacyID": "93",
+      "currentID": "hkr_mtn_08c6fa772175c930011785b4720e3c94"
+    },
+    {
+      "legacyID": "94",
+      "currentID": "hkr_mtn_d1e3593e5f7045e309e0b2b4f34a606a"
+    },
+    {
+      "legacyID": "95",
+      "currentID": "hkr_mtn_95b50f45bd585888e58dd5591c11919b"
+    },
+    {
+      "legacyID": "96",
+      "currentID": "hkr_mtn_de53709ae72c43f1d803c0ba9f52c657"
+    },
+    {
+      "legacyID": "97",
+      "currentID": "hkr_mtn_65a939c9aaf9500479e00974050025ef"
+    },
+    {
+      "legacyID": "98",
+      "currentID": "hkr_mtn_19e07d72db0d43272496eb737a1546ee"
+    },
+    {
+      "legacyID": "99",
+      "currentID": "hkr_mtn_9e70a7dad415f47cac7d6de09769fc8c"
+    },
+    {
+      "legacyID": "100",
+      "currentID": "hkr_mtn_714454c456205b1077fb2048217c8420"
+    }
+  ]
+}

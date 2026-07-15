@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "2B7F8A87-3C66-4C16-9616-F87B43ABA2F8",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "0B1B6B46-C8D9-484D-BD55-E44ECA030348.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "M1-map-selected-summary_0_2AD9134F-6AF5-4B68-A385-E7207066C41C.png",
+        "timestamp" : 1783993208.852
+      }
+    ],
+    "testIdentifier" : "AccessibilitySmokeTests/testMapAccessibility()",
+    "testIdentifierURL" : "test://com.apple.xcode/Hiker/HikerUITests/AccessibilitySmokeTests/testMapAccessibility"
+  }
+]

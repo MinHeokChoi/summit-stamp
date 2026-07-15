@@ -1,0 +1,658 @@
+{
+  "schemaVersion": 1,
+  "requiredIds": [
+    "ARCH-001",
+    "UI-BUILD-PRODUCER",
+    "DATA-001",
+    "MAP-001",
+    "MAP-002",
+    "A11Y-001",
+    "PASS-001",
+    "PASS-002",
+    "PASS-003",
+    "PASS-004",
+    "PASS-005",
+    "PASS-006",
+    "PASS-007",
+    "PASS-008",
+    "OUT-001",
+    "OUT-002",
+    "OUT-003",
+    "OUT-004",
+    "OUT-005",
+    "MAP-003",
+    "AUTH-APPLE-STAGING",
+    "OPS-001",
+    "OPS-002",
+    "EVIDENCE-BIJECTION-NEGATIVE",
+    "AUTH-002",
+    "AUTH-003",
+    "AUTH-004",
+    "AUTH-005-PREFLIGHT-SERVER",
+    "AUTH-005-PREFLIGHT-ARCHIVE",
+    "AUTH-005-PREFLIGHT",
+    "OUT-006",
+    "SYNC-001",
+    "SYNC-002",
+    "SYNC-003",
+    "SYNC-004",
+    "SYNC-005",
+    "SYNC-006",
+    "SYNC-007",
+    "SYNC-008",
+    "HIST-001",
+    "HIST-002",
+    "HIST-003",
+    "HIST-004",
+    "HIST-005",
+    "HIST-006",
+    "HIST-007",
+    "HIST-008",
+    "MIG-001",
+    "MIG-002",
+    "MIG-003",
+    "MIG-004",
+    "MIG-005",
+    "MIG-005-PROTECTED",
+    "GPS-001",
+    "GPS-002",
+    "GPS-003",
+    "GPS-004",
+    "GPS-005",
+    "GPS-006",
+    "GPS-007",
+    "PRIV-001",
+    "SOC-001",
+    "SOC-002",
+    "SOC-003",
+    "SOC-004",
+    "SOC-005",
+    "SOC-006",
+    "SOC-007",
+    "SOC-008",
+    "SOC-009",
+    "SOC-010",
+    "PRIV-002",
+    "E2E-001",
+    "E2E-002",
+    "E2E-003",
+    "REL-002-GENESIS-NEGATIVE",
+    "PERF-001",
+    "AUTH-005-RC-SERVER",
+    "AUTH-005-RC-ARCHIVE",
+    "AUTH-005-RC",
+    "OPS-003",
+    "OPS-004",
+    "OPS-005",
+    "REL-001",
+    "REL-002",
+    "REL-003",
+    "REL-004",
+    "REL-005",
+    "REL-006",
+    "REL-007",
+    "REL-008",
+    "REL-009",
+    "M6-EXIT",
+    "REL-010",
+    "REL-011-05",
+    "REL-PHASE-05",
+    "REL-011-25",
+    "REL-PHASE-25",
+    "REL-011-50",
+    "REL-PHASE-50",
+    "REL-011-100",
+    "REL-PHASE-100",
+    "REL-012",
+    "REL-013",
+    "REL-014",
+    "REL-CONTRACT"
+  ],
+  "allowedProducers": {
+    "ARCH-001": {
+      "runner": "xcode",
+      "job": "ios-architecture",
+      "output": "Evidence/tests/ARCH-001.json",
+      "scheme": "HikerArchitectureTests"
+    },
+    "UI-BUILD-PRODUCER": {
+      "runner": "ui-build",
+      "job": "ios-build-for-testing",
+      "output": "Evidence/tests/UI-BUILD-PRODUCER.json",
+      "scheme": "HikerUITests"
+    },
+    "DATA-001": {
+      "runner": "swift",
+      "job": "ios-dataset",
+      "output": "Evidence/tests/DATA-001.json"
+    },
+    "MAP-001": {
+      "runner": "xcode",
+      "job": "ios-map-feature",
+      "output": "Evidence/tests/MAP-001.json",
+      "scheme": "HikerFeaturesTests"
+    },
+    "MAP-002": {
+      "runner": "xcode",
+      "job": "ios-map-feature",
+      "output": "Evidence/tests/MAP-002.json",
+      "scheme": "HikerFeaturesTests"
+    },
+    "A11Y-001": {
+      "runner": "xctest",
+      "job": "ios-a11y-consumer",
+      "output": "Evidence/tests/A11Y-001.json",
+      "scheme": "HikerUITests"
+    },
+    "PASS-001": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-001.json"
+    },
+    "PASS-002": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-002.json"
+    },
+    "PASS-003": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-003.json"
+    },
+    "PASS-004": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-004.json"
+    },
+    "PASS-005": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-005.json"
+    },
+    "PASS-006": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-006.json"
+    },
+    "PASS-007": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-007.json"
+    },
+    "PASS-008": {
+      "runner": "swift",
+      "job": "ios-passport-domain",
+      "output": "Evidence/tests/PASS-008.json"
+    },
+    "OUT-001": {
+      "runner": "swift",
+      "job": "ios-manual-outbox",
+      "output": "Evidence/tests/OUT-001.json"
+    },
+    "OUT-002": {
+      "runner": "swift",
+      "job": "ios-manual-outbox",
+      "output": "Evidence/tests/OUT-002.json"
+    },
+    "OUT-003": {
+      "runner": "swift",
+      "job": "ios-manual-outbox",
+      "output": "Evidence/tests/OUT-003.json"
+    },
+    "OUT-004": {
+      "runner": "swift",
+      "job": "ios-manual-outbox",
+      "output": "Evidence/tests/OUT-004.json"
+    },
+    "OUT-005": {
+      "runner": "swift",
+      "job": "ios-manual-outbox",
+      "output": "Evidence/tests/OUT-005.json"
+    },
+    "MAP-003": {
+      "runner": "xctest",
+      "job": "ios-map-flow",
+      "output": "Evidence/tests/MAP-003.json",
+      "scheme": "HikerUITests"
+    },
+    "AUTH-APPLE-STAGING": {
+      "runner": "apple-staging",
+      "job": "m2a-auth-shell",
+      "output": "Evidence/runtime/AUTH-APPLE-STAGING.json"
+    },
+    "OPS-001": {
+      "runner": "runtime",
+      "job": "toolchain-provider",
+      "output": "Evidence/runtime/OPS-001.json"
+    },
+    "OPS-002": {
+      "runner": "runtime",
+      "job": "environment-provider-gate",
+      "output": "Evidence/runtime/OPS-002.json"
+    },
+    "EVIDENCE-BIJECTION-NEGATIVE": {
+      "runner": "bijection-negative",
+      "job": "evidence-bijection-negative",
+      "output": "Evidence/tests/EVIDENCE-BIJECTION-NEGATIVE.json"
+    },
+    "AUTH-002": {
+      "runner": "xcode",
+      "job": "ios-auth-social",
+      "output": "Evidence/tests/AUTH-002.json",
+      "scheme": "HikerArchitectureTests"
+    },
+    "AUTH-003": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/AUTH-003.json"
+    },
+    "AUTH-004": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/AUTH-004.json"
+    },
+    "AUTH-005-PREFLIGHT-SERVER": {
+      "runner": "runtime",
+      "job": "preflight-auth-server",
+      "output": "Evidence/runtime/AUTH-005-PREFLIGHT-SERVER.json"
+    },
+    "AUTH-005-PREFLIGHT-ARCHIVE": {
+      "runner": "runtime",
+      "job": "preflight-auth-archive",
+      "output": "Evidence/runtime/AUTH-005-PREFLIGHT-ARCHIVE.json"
+    },
+    "AUTH-005-PREFLIGHT": {
+      "runner": "runtime",
+      "job": "preflight-auth-aggregate",
+      "output": "Evidence/runtime/AUTH-005-PREFLIGHT.json"
+    },
+    "OUT-006": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/OUT-006.json"
+    },
+    "SYNC-001": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/SYNC-001.json"
+    },
+    "SYNC-002": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/SYNC-002.json"
+    },
+    "SYNC-003": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/SYNC-003.json"
+    },
+    "SYNC-004": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/SYNC-004.json"
+    },
+    "SYNC-005": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/SYNC-005.json"
+    },
+    "SYNC-006": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/SYNC-006.json"
+    },
+    "SYNC-007": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/SYNC-007.json"
+    },
+    "SYNC-008": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/SYNC-008.json"
+    },
+    "HIST-001": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-001.json"
+    },
+    "HIST-002": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-002.json"
+    },
+    "HIST-003": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-003.json"
+    },
+    "HIST-004": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-004.json"
+    },
+    "HIST-005": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-005.json"
+    },
+    "HIST-006": {
+      "runner": "swift",
+      "job": "ios-passport",
+      "output": "Evidence/tests/HIST-006.json"
+    },
+    "HIST-007": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/HIST-007.json"
+    },
+    "HIST-008": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/HIST-008.json"
+    },
+    "MIG-001": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/MIG-001.json"
+    },
+    "MIG-002": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/MIG-002.json"
+    },
+    "MIG-003": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/MIG-003.json"
+    },
+    "MIG-004": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/MIG-004.json"
+    },
+    "MIG-005": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/MIG-005.json"
+    },
+    "MIG-005-PROTECTED": {
+      "runner": "runtime",
+      "job": "protected-pitr-restore",
+      "output": "Evidence/runtime/MIG-005-PROTECTED.json"
+    },
+    "GPS-001": {
+      "runner": "swift",
+      "job": "ios-location",
+      "output": "Evidence/tests/GPS-001.json"
+    },
+    "GPS-002": {
+      "runner": "swift",
+      "job": "ios-location",
+      "output": "Evidence/tests/GPS-002.json"
+    },
+    "GPS-003": {
+      "runner": "swift",
+      "job": "ios-location",
+      "output": "Evidence/tests/GPS-003.json"
+    },
+    "GPS-004": {
+      "runner": "xctest",
+      "job": "ios-gps-a11y",
+      "output": "Evidence/tests/GPS-004.json",
+      "scheme": "HikerUITests"
+    },
+    "GPS-005": {
+      "runner": "swift",
+      "job": "ios-data",
+      "output": "Evidence/tests/GPS-005.json"
+    },
+    "GPS-006": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/GPS-006.json"
+    },
+    "GPS-007": {
+      "runner": "xctest",
+      "job": "ios-gps-a11y",
+      "output": "Evidence/tests/GPS-007.json",
+      "scheme": "HikerUITests"
+    },
+    "PRIV-001": {
+      "runner": "pgtap",
+      "job": "backend-shards",
+      "output": "Evidence/tests/PRIV-001.json"
+    },
+    "SOC-001": {
+      "runner": "pgtap",
+      "job": "backend-friend-codes",
+      "output": "Evidence/tests/SOC-001.json"
+    },
+    "SOC-002": {
+      "runner": "pgtap",
+      "job": "backend-friend-codes",
+      "output": "Evidence/tests/SOC-002.json"
+    },
+    "SOC-003": {
+      "runner": "pgtap",
+      "job": "backend-friend-codes",
+      "output": "Evidence/tests/SOC-003.json"
+    },
+    "SOC-004": {
+      "runner": "swift",
+      "job": "ios-social-domain",
+      "output": "Evidence/tests/SOC-004.json"
+    },
+    "SOC-005": {
+      "runner": "pgtap",
+      "job": "backend-stream",
+      "output": "Evidence/tests/SOC-005.json"
+    },
+    "SOC-006": {
+      "runner": "pgtap",
+      "job": "backend-stream",
+      "output": "Evidence/tests/SOC-006.json"
+    },
+    "SOC-007": {
+      "runner": "swift",
+      "job": "ios-social-data",
+      "output": "Evidence/tests/SOC-007.json"
+    },
+    "SOC-008": {
+      "runner": "swift",
+      "job": "ios-social-data",
+      "output": "Evidence/tests/SOC-008.json"
+    },
+    "SOC-009": {
+      "runner": "xctest",
+      "job": "ios-social-ui",
+      "output": "Evidence/tests/SOC-009.json",
+      "scheme": "HikerUITests"
+    },
+    "SOC-010": {
+      "runner": "xctest",
+      "job": "ios-social-ui",
+      "output": "Evidence/tests/SOC-010.json",
+      "scheme": "HikerUITests"
+    },
+    "PRIV-002": {
+      "runner": "swift",
+      "job": "ios-social-data",
+      "output": "Evidence/tests/PRIV-002.json"
+    },
+    "E2E-001": {
+      "runner": "xctest",
+      "job": "ios-social-ui",
+      "output": "Evidence/tests/E2E-001.json",
+      "scheme": "HikerUITests"
+    },
+    "E2E-002": {
+      "runner": "xctest",
+      "job": "ios-social-ui",
+      "output": "Evidence/tests/E2E-002.json",
+      "scheme": "HikerUITests"
+    },
+    "E2E-003": {
+      "runner": "xctest",
+      "job": "ios-social-ui",
+      "output": "Evidence/tests/E2E-003.json",
+      "scheme": "HikerUITests"
+    },
+    "REL-002-GENESIS-NEGATIVE": {
+      "runner": "pgtap",
+      "job": "migration",
+      "output": "Evidence/tests/REL-002-GENESIS-NEGATIVE.json"
+    },
+    "PERF-001": {
+      "runner": "xcode",
+      "job": "performance",
+      "output": "Evidence/tests/PERF-001.json",
+      "scheme": "HikerPerformanceTests"
+    },
+    "AUTH-005-RC-SERVER": {
+      "runner": "runtime",
+      "job": "rc-auth-server",
+      "output": "Evidence/runtime/AUTH-005-RC-SERVER.json"
+    },
+    "AUTH-005-RC-ARCHIVE": {
+      "runner": "runtime",
+      "job": "rc-auth-archive",
+      "output": "Evidence/runtime/AUTH-005-RC-ARCHIVE.json"
+    },
+    "AUTH-005-RC": {
+      "runner": "runtime",
+      "job": "rc-auth-aggregate",
+      "output": "Evidence/runtime/AUTH-005-RC.json"
+    },
+    "OPS-003": {
+      "runner": "runtime",
+      "job": "alert-drill",
+      "output": "Evidence/runtime/OPS-003.json"
+    },
+    "OPS-004": {
+      "runner": "runtime",
+      "job": "evidence-disposition",
+      "output": "Evidence/runtime/OPS-004.json"
+    },
+    "OPS-005": {
+      "runner": "runtime",
+      "job": "threshold-ratification",
+      "output": "Evidence/runtime/OPS-005.json"
+    },
+    "REL-001": {
+      "runner": "runtime",
+      "job": "readiness",
+      "output": "Evidence/manifests/m6-readiness.json"
+    },
+    "REL-002": {
+      "runner": "runtime",
+      "job": "migration-predeploy",
+      "output": "Evidence/runtime/REL-002.json"
+    },
+    "REL-003": {
+      "runner": "runtime",
+      "job": "compat-synthetics",
+      "output": "Evidence/runtime/REL-003.json"
+    },
+    "REL-004": {
+      "runner": "runtime",
+      "job": "internal-alpha",
+      "output": "Evidence/runtime/REL-004.json"
+    },
+    "REL-005": {
+      "runner": "runtime",
+      "job": "external-beta",
+      "output": "Evidence/runtime/REL-005.json"
+    },
+    "REL-006": {
+      "runner": "runtime",
+      "job": "metadata-review",
+      "output": "Evidence/runtime/REL-006.json"
+    },
+    "REL-007": {
+      "runner": "runtime",
+      "job": "rc-freeze",
+      "output": "Evidence/runtime/REL-007.json"
+    },
+    "REL-008": {
+      "runner": "runtime",
+      "job": "pitr-drill",
+      "output": "Evidence/runtime/REL-008.json"
+    },
+    "REL-009": {
+      "runner": "runtime",
+      "job": "kill-switch-drill",
+      "output": "Evidence/runtime/REL-009.json"
+    },
+    "M6-EXIT": {
+      "runner": "runtime",
+      "job": "m6-exit",
+      "output": "Evidence/runtime/M6-EXIT.json"
+    },
+    "REL-010": {
+      "runner": "runtime",
+      "job": "rollout-1pct",
+      "output": "Evidence/runtime/REL-010.json"
+    },
+    "REL-011-05": {
+      "runner": "runtime",
+      "job": "rollout-review-05",
+      "output": "Evidence/runtime/REL-011-05.json"
+    },
+    "REL-PHASE-05": {
+      "runner": "runtime",
+      "job": "rollout-phase-05",
+      "output": "Evidence/runtime/REL-PHASE-05.json"
+    },
+    "REL-011-25": {
+      "runner": "runtime",
+      "job": "rollout-review-25",
+      "output": "Evidence/runtime/REL-011-25.json"
+    },
+    "REL-PHASE-25": {
+      "runner": "runtime",
+      "job": "rollout-phase-25",
+      "output": "Evidence/runtime/REL-PHASE-25.json"
+    },
+    "REL-011-50": {
+      "runner": "runtime",
+      "job": "rollout-review-50",
+      "output": "Evidence/runtime/REL-011-50.json"
+    },
+    "REL-PHASE-50": {
+      "runner": "runtime",
+      "job": "rollout-phase-50",
+      "output": "Evidence/runtime/REL-PHASE-50.json"
+    },
+    "REL-011-100": {
+      "runner": "runtime",
+      "job": "rollout-review-100",
+      "output": "Evidence/runtime/REL-011-100.json"
+    },
+    "REL-PHASE-100": {
+      "runner": "runtime",
+      "job": "rollout-phase-100",
+      "output": "Evidence/runtime/REL-PHASE-100.json"
+    },
+    "REL-012": {
+      "runner": "runtime",
+      "job": "rollback-tabletop",
+      "output": "Evidence/runtime/REL-012.json"
+    },
+    "REL-013": {
+      "runner": "runtime",
+      "job": "incident-comms",
+      "output": "Evidence/runtime/REL-013.json"
+    },
+    "REL-014": {
+      "runner": "runtime",
+      "job": "postrelease-review",
+      "output": "Evidence/runtime/REL-014.json"
+    },
+    "REL-CONTRACT": {
+      "runner": "runtime",
+      "job": "contract-remove-old",
+      "output": "Evidence/runtime/REL-CONTRACT.json"
+    }
+  }
+}

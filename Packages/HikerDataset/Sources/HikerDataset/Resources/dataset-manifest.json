@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "1.0.0-rc.1",
+  "status": "release_candidate_public_official_source",
+  "source": {
+    "status": "release_candidate_public_official_source",
+    "url": "https://map.forest.go.kr/forest/?systype=appdata",
+    "service": "https://map.forest.go.kr/gis1/iserver/services/data-fdms/rest/data",
+    "dataset": "FDMS_BASE:TB_FGDI_FS_F100",
+    "crs": "EPSG:5179",
+    "retrievedAt": "2026-07-14T00:03:32.659Z",
+    "sha256": "c82eab718f45afc58bbe45d7f6a4904187fb7f0d0cd6aadd0a287ae78d13128d",
+    "rawResource": "Evidence/dataset/official-100-mountains-v1.raw.json",
+    "normalizedSnapshotPath": "Evidence/dataset/official-100-mountains-v1.normalized.json"
+  },
+  "content": {
+    "status": "release_candidate_public_official_source",
+    "resource": "official-100-mountains-v1",
+    "coordinateReferenceSystem": "WGS84",
+    "sha256": "1032070f3d7ea12ae68be5859bb1eef353ab815da763f23f8940527b39783cae"
+  },
+  "legacy": {
+    "status": "release_candidate_legacy_mapping",
+    "resource": "legacy-mountain-metadata-v1",
+    "sha256": "04028d8e4895eff00cdcd96267460eebb0ccaed3450c643ef06b30e1c87ffc73"
+  },
+  "review": {
+    "status": "not_human_reviewed",
+    "reviewers": [],
+    "reviewedAt": null
+  },
+  "entryCount": 100
+}

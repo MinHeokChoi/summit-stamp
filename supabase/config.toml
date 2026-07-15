@@ -1,0 +1,49 @@
+# Development-only local Supabase configuration. Do not link this project to a
+# hosted environment or add production keys, OAuth credentials, or secrets here.
+project_id = "hiker-local"
+
+[api]
+enabled = true
+port = 55421
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 55422
+shadow_port = 55420
+major_version = 15
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = 55423
+api_url = "http://127.0.0.1:55421"
+
+[local_smtp]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:55423"
+additional_redirect_urls = []
+jwt_expiry = 3600
+enable_signup = false
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = false
+enable_confirmations = false
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false

@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "2B7F8A87-3C66-4C16-9616-F87B43ABA2F8",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "88208769-586C-428D-8A93-1CDE0C23C6F8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "MAP-003-manual-visit-selected_0_5E71CEA9-C576-49A7-8A67-3DFEDDEC2B54.png",
+        "timestamp" : 1783997943.265
+      }
+    ],
+    "testIdentifier" : "MapFlowTests/testManualPendingAddDeleteUpdatesPinImmediately()",
+    "testIdentifierURL" : "test://com.apple.xcode/Hiker/HikerUITests/MapFlowTests/testManualPendingAddDeleteUpdatesPinImmediately"
+  }
+]

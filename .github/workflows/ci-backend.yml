@@ -1,0 +1,145 @@
+name: Backend CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-backend-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-shards:
+    name: backend shards
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: auth
+            evidence_id: AUTH-001
+          - shard: grants
+            evidence_id: AUTH-003
+          - shard: rls
+            evidence_id: AUTH-004
+          - shard: rpc
+            evidence_id: SYNC-001
+          - shard: rpc
+            evidence_id: SYNC-002
+          - shard: rpc
+            evidence_id: SYNC-003
+          - shard: self_read
+            evidence_id: SYNC-006
+          - shard: self_read
+            evidence_id: SYNC-007
+          - shard: self_read
+            evidence_id: HIST-001
+          - shard: self_read
+            evidence_id: HIST-002
+          - shard: self_read
+            evidence_id: HIST-003
+          - shard: self_read
+            evidence_id: HIST-004
+          - shard: self_read
+            evidence_id: HIST-005
+          - shard: self_read
+            evidence_id: HIST-007
+          - shard: privacy
+            evidence_id: GPS-006
+          - shard: privacy
+            evidence_id: PRIV-001
+          - shard: migration
+            evidence_id: MIG-001
+          - shard: migration
+            evidence_id: MIG-002
+          - shard: migration
+            evidence_id: MIG-003
+          - shard: migration
+            evidence_id: MIG-004
+          - shard: migration
+            evidence_id: MIG-005
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Run isolated backend evidence profile
+        env:
+          BACKEND_SHARD: ${{ matrix.shard }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id "${{ matrix.evidence_id }}"
+      - name: Upload backend shard evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-${{ matrix.shard }}-${{ matrix.evidence_id }}-${{ github.sha }}
+          path: Evidence/tests/${{ matrix.evidence_id }}.json*
+          if-no-files-found: error
+          retention-days: 90
+  backend-friend-codes:
+    name: backend friend codes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: friend_codes
+            evidence_id: SOC-001
+          - shard: friend_codes
+            evidence_id: SOC-002
+          - shard: friend_codes
+            evidence_id: SOC-003
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Run friend code evidence profile
+        env:
+          BACKEND_SHARD: ${{ matrix.shard }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id "${{ matrix.evidence_id }}"
+      - name: Upload friend code evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-${{ matrix.shard }}-${{ matrix.evidence_id }}-${{ github.sha }}
+          path: Evidence/tests/${{ matrix.evidence_id }}.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  backend-stream:
+    name: backend stream
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: stream
+            evidence_id: SOC-005
+          - shard: stream
+            evidence_id: SOC-006
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Run stream evidence profile
+        env:
+          BACKEND_SHARD: ${{ matrix.shard }}
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id "${{ matrix.evidence_id }}"
+      - name: Upload stream evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-${{ matrix.shard }}-${{ matrix.evidence_id }}-${{ github.sha }}
+          path: Evidence/tests/${{ matrix.evidence_id }}.json*
+          if-no-files-found: error
+          retention-days: 90

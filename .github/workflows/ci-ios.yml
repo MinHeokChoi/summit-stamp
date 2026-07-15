@@ -1,0 +1,676 @@
+name: iOS CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-ios-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-architecture:
+    name: ios-architecture
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run architecture evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id ARCH-001
+      - name: Upload architecture evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-architecture-evidence-${{ github.sha }}
+          path: Evidence/tests/ARCH-001.json*
+          if-no-files-found: error
+          retention-days: 90
+
+
+  ios-build-for-testing:
+    name: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Build UI tests and provenance artifact
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id UI-BUILD-PRODUCER
+      - name: Upload UI build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ui-build-${{ github.sha }}
+          path: |
+            .ci/xctest
+            .ci/results/ui-build.xcresult
+            Evidence/tests/UI-BUILD-PRODUCER.json*
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+      - name: Upload UI build producer evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ui-build-producer-evidence-${{ github.sha }}
+          path: Evidence/tests/UI-BUILD-PRODUCER.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-dataset:
+    name: ios-dataset
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run official dataset evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id DATA-001
+      - name: Upload official dataset evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-dataset-evidence-${{ github.sha }}
+          path: Evidence/tests/DATA-001.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-location:
+    name: ios-location
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run GPS distance evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-001
+      - name: Run GPS accuracy evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-002
+      - name: Run GPS age evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-003
+      - name: Upload GPS location evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-location-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/GPS-001.json*
+            Evidence/tests/GPS-002.json*
+            Evidence/tests/GPS-003.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-map-feature:
+    name: ios-map-feature
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run map completeness evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id MAP-001
+      - name: Run map fail-closed evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id MAP-002
+      - name: Upload map feature evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-map-feature-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/MAP-001.json*
+            Evidence/tests/MAP-002.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-a11y-consumer:
+    name: ios-a11y-consumer
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run prebuilt map accessibility evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id A11Y-001
+      - name: Upload map accessibility evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-a11y-evidence-${{ github.sha }}
+          path: Evidence/tests/A11Y-001.json*
+          if-no-files-found: error
+          retention-days: 90
+  ios-passport-domain:
+    name: ios-passport-domain
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run passport state evidence profile PASS-001
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-001
+      - name: Run passport state evidence profile PASS-002
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-002
+      - name: Run passport state evidence profile PASS-003
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-003
+      - name: Run passport state evidence profile PASS-004
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-004
+      - name: Run passport state evidence profile PASS-005
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-005
+      - name: Run passport state evidence profile PASS-006
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-006
+      - name: Run passport state evidence profile PASS-007
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-007
+      - name: Run passport state evidence profile PASS-008
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PASS-008
+      - name: Upload passport domain evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-passport-domain-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/PASS-001.json*
+            Evidence/tests/PASS-002.json*
+            Evidence/tests/PASS-003.json*
+            Evidence/tests/PASS-004.json*
+            Evidence/tests/PASS-005.json*
+            Evidence/tests/PASS-006.json*
+            Evidence/tests/PASS-007.json*
+            Evidence/tests/PASS-008.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-manual-outbox:
+    name: ios-manual-outbox
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run manual outbox evidence profile OUT-001
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-001
+      - name: Run manual outbox evidence profile OUT-002
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-002
+      - name: Run manual outbox evidence profile OUT-003
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-003
+      - name: Run manual outbox evidence profile OUT-004
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-004
+      - name: Run manual outbox evidence profile OUT-005
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-005
+      - name: Upload manual outbox evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-manual-outbox-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/OUT-001.json*
+            Evidence/tests/OUT-002.json*
+            Evidence/tests/OUT-003.json*
+            Evidence/tests/OUT-004.json*
+            Evidence/tests/OUT-005.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-map-flow:
+    name: ios-map-flow
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run prebuilt map flow evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id MAP-003
+      - name: Upload map flow evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-map-flow-evidence-${{ github.sha }}
+          path: Evidence/tests/MAP-003.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-gps-a11y:
+    name: ios-gps-a11y
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run GPS failure fallback evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-004
+      - name: Run GPS advisory copy evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-007
+      - name: Upload GPS UI evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-gps-a11y-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/GPS-004.json*
+            Evidence/tests/GPS-007.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-data:
+    name: ios-data
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run outbox acknowledgement rebase evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id OUT-006
+      - name: Run complete bootstrap evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SYNC-004
+      - name: Run multi-device rebase evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SYNC-005
+      - name: Run write-pause outbox evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SYNC-008
+      - name: Run history-then-change evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id HIST-008
+      - name: Run GPS no-outbox evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id GPS-005
+      - name: Upload data sync evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-data-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/OUT-006.json*
+            Evidence/tests/SYNC-004.json*
+            Evidence/tests/SYNC-005.json*
+            Evidence/tests/SYNC-008.json*
+            Evidence/tests/HIST-008.json*
+            Evidence/tests/GPS-005.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-auth-social:
+    name: ios-auth-social
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run prebuilt authentication lifecycle evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id AUTH-002
+      - name: Upload authentication lifecycle evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-auth-social-evidence-${{ github.sha }}
+          path: Evidence/tests/AUTH-002.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-passport:
+    name: ios-passport
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run prebuilt partial-history evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id HIST-006
+      - name: Upload partial-history evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-passport-evidence-${{ github.sha }}
+          path: Evidence/tests/HIST-006.json*
+          if-no-files-found: error
+          retention-days: 90
+  ios-social-domain:
+    name: ios-social-domain
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run social domain evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-004
+      - name: Upload social domain evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-social-domain-evidence-${{ github.sha }}
+          path: Evidence/tests/SOC-004.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-social-data:
+    name: ios-social-data
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Run event-before-fetch social data evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-007
+      - name: Run response-before-event social data evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-008
+      - name: Run forbidden social DTO fields evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id PRIV-002
+      - name: Upload social data evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-social-data-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/SOC-007.json*
+            Evidence/tests/SOC-008.json*
+            Evidence/tests/PRIV-002.json*
+          if-no-files-found: error
+          retention-days: 90
+
+  ios-social-ui:
+    name: ios-social-ui
+    needs: ios-build-for-testing
+    runs-on: macos-26
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select and validate Xcode 26.5 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly xcode_app=/Applications/Xcode_26.5.app
+          [[ -d "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: required Xcode is absent: $xcode_app" >&2; exit 1; }
+          [[ "$DEVELOPER_DIR" == "$xcode_app/Contents/Developer" ]] || { printf '%s\n' "error: DEVELOPER_DIR is not set to Xcode 26.5" >&2; exit 1; }
+          xcode_version="$(xcodebuild -version)"
+          [[ "$xcode_version" == $'Xcode 26.5\nBuild version '* ]] || { printf '%s\n' "error: expected Xcode 26.5, found: $xcode_version" >&2; exit 1; }
+          swift_version="$(xcrun swift --version)"
+          [[ "$swift_version" == *"Swift version 6.3.2 "* ]] || { printf '%s\n' "error: expected Swift 6.3.2, found: $swift_version" >&2; exit 1; }
+      - name: Download prebuilt UI test payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ui-build-${{ github.sha }}
+          path: .
+      - name: Run fail-closed social UI evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-009
+      - name: Run no-persisted-friend-bytes UI evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id SOC-010
+      - name: Run two-device passport UI evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id E2E-001
+      - name: Run GPS UI end-to-end evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id E2E-002
+      - name: Run social UI end-to-end evidence profile
+        run: Scripts/ci/run-evidence-profile.sh --profiles Docs/evidence/evidence-profiles.yml --id E2E-003
+      - name: Upload social UI evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-social-ui-evidence-${{ github.sha }}
+          path: |
+            Evidence/tests/SOC-009.json*
+            Evidence/tests/SOC-010.json*
+            Evidence/tests/E2E-001.json*
+            Evidence/tests/E2E-002.json*
+            Evidence/tests/E2E-003.json*
+          if-no-files-found: error
+          retention-days: 90

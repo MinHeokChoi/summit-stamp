@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "2B7F8A87-3C66-4C16-9616-F87B43ABA2F8",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "10ED93E8-8747-4148-9262-E3C01125B1E7.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "M2A auth shell unavailable without protected configuration_0_939E6A8D-B09D-4255-AB34-31266D1ABEB7.png",
+        "timestamp" : 1784003258.462
+      }
+    ],
+    "testIdentifier" : "AuthenticationShellTests/testUnconfiguredAuthenticationFailsClosedWhileLocalTabsRemainAvailable()",
+    "testIdentifierURL" : "test://com.apple.xcode/Hiker/HikerUITests/AuthenticationShellTests/testUnconfiguredAuthenticationFailsClosedWhileLocalTabsRemainAvailable"
+  }
+]

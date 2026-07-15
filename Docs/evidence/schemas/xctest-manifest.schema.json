@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiker.invalid/evidence/schemas/xctest-manifest/v1",
+  "title": "Hiker xctest payload manifest v1",
+  "description": "A recursive, digest-only inventory of a build-for-testing payload. It carries paths, modes, and hashes only; no logs, credentials, or person-identifying data are permitted.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "inputs",
+    "artifacts",
+    "sourceMetadata",
+    "projectMetadata",
+    "lockMetadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "inputs": {
+      "type": "object",
+      "required": ["xctestrun", "project", "sourcePaths", "lockfiles"],
+      "additionalProperties": false,
+      "properties": {
+        "xctestrun": { "$ref": "#/$defs/safePath" },
+        "project": { "$ref": "#/$defs/safePath" },
+        "sourcePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/safePath" }
+        },
+        "lockfiles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/safePath" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "sourceMetadata": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "projectMetadata": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "lockMetadata": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._+@=-]*(?:/[A-Za-z0-9][A-Za-z0-9._+@=-]*)*$",
+      "maxLength": 1024
+    },
+    "mode": {
+      "type": "string",
+      "pattern": "^[0-7]{4}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "entry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["path", "mode", "kind", "sha256"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "$ref": "#/$defs/safePath" },
+            "mode": { "$ref": "#/$defs/mode" },
+            "kind": { "const": "file" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["path", "mode", "kind"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "$ref": "#/$defs/safePath" },
+            "mode": { "$ref": "#/$defs/mode" },
+            "kind": { "const": "directory" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["path", "mode", "kind", "sha256", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "$ref": "#/$defs/safePath" },
+            "mode": { "$ref": "#/$defs/mode" },
+            "kind": { "const": "symlink" },
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "target": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._+@/=-]+$",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          }
+        }
+      ]
+    }
+  }
+}

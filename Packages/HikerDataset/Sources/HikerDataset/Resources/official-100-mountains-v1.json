@@ -1,0 +1,808 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "1.0.0-rc.1",
+  "status": "release_candidate_public_official_source",
+  "coordinateReferenceSystem": "WGS84",
+  "entries": [
+    {
+      "id": "hkr_mtn_4d9852ed3a4678b1dab6400733c8fa77",
+      "sourceReference": "1",
+      "name": "가야산",
+      "administrativeCode": "48890330",
+      "longitude": 128.16307418154065,
+      "latitude": 35.77606146654562
+    },
+    {
+      "id": "hkr_mtn_da12fca46f317ec9c41a81e52a2e18e9",
+      "sourceReference": "2",
+      "name": "가리산",
+      "administrativeCode": "51110380",
+      "longitude": 127.95635142530378,
+      "latitude": 37.87108173508344
+    },
+    {
+      "id": "hkr_mtn_1895a6994591470aa491de196849d390",
+      "sourceReference": "3",
+      "name": "가리왕산",
+      "administrativeCode": "51760360",
+      "longitude": 128.56357373348237,
+      "latitude": 37.461886512072454
+    },
+    {
+      "id": "hkr_mtn_1cbbeefd7f32312dbfd1d5523cbf3a69",
+      "sourceReference": "4",
+      "name": "가지산",
+      "administrativeCode": "47820350",
+      "longitude": 129.00233152566665,
+      "latitude": 35.62011565753162
+    },
+    {
+      "id": "hkr_mtn_76303cf5d76bcf421d818bd2dfd1a49e",
+      "sourceReference": "5",
+      "name": "감악산",
+      "administrativeCode": "41480370",
+      "longitude": 126.96969296809245,
+      "latitude": 37.941344043107684
+    },
+    {
+      "id": "hkr_mtn_4e494489053fbd35d7880a8a56ec2a9d",
+      "sourceReference": "6",
+      "name": "강천산",
+      "administrativeCode": "46710380",
+      "longitude": 127.04983940624501,
+      "latitude": 35.40356945517567
+    },
+    {
+      "id": "hkr_mtn_8e1938d5ea364530de194a28e63d99eb",
+      "sourceReference": "7",
+      "name": "계룡산",
+      "administrativeCode": "44150330",
+      "longitude": 127.20573349073435,
+      "latitude": 36.34228166807093
+    },
+    {
+      "id": "hkr_mtn_ee3cc21f0f3e388f6d63c88e3ada2abd",
+      "sourceReference": "8",
+      "name": "계방산",
+      "administrativeCode": "51720390",
+      "longitude": 128.4659113195711,
+      "latitude": 37.72832102573284
+    },
+    {
+      "id": "hkr_mtn_3d1c9ebd0553ed18daa92d583bd7598d",
+      "sourceReference": "9",
+      "name": "공작산",
+      "administrativeCode": "51110390",
+      "longitude": 128.0100511644474,
+      "latitude": 37.71524521899454
+    },
+    {
+      "id": "hkr_mtn_65d017f11deb1e273315b600bbabc53c",
+      "sourceReference": "10",
+      "name": "관악산",
+      "administrativeCode": "11620102",
+      "longitude": 126.96295961954901,
+      "latitude": 37.441075705606686
+    },
+    {
+      "id": "hkr_mtn_8a5f383ab63263c9282f1f6bce0bce3d",
+      "sourceReference": "11",
+      "name": "구병산",
+      "administrativeCode": "43720310",
+      "longitude": 127.8620069894429,
+      "latitude": 36.46947824326287
+    },
+    {
+      "id": "hkr_mtn_63978d735a55babc106935c30a0d13e4",
+      "sourceReference": "12",
+      "name": "금산",
+      "administrativeCode": "48840320",
+      "longitude": 127.98038924790062,
+      "latitude": 34.753107414204564
+    },
+    {
+      "id": "hkr_mtn_809d36c86a50aa38d5ec12ea871c3fdf",
+      "sourceReference": "13",
+      "name": "금수산",
+      "administrativeCode": "43150330",
+      "longitude": 128.25666733208405,
+      "latitude": 36.98478911680494
+    },
+    {
+      "id": "hkr_mtn_1b466671c5f4f324eef899136dfbc0ee",
+      "sourceReference": "14",
+      "name": "금오산",
+      "administrativeCode": "47190108",
+      "longitude": 128.29982883577213,
+      "latitude": 36.09160809551935
+    },
+    {
+      "id": "hkr_mtn_edd48f640a31b899f6f595b29aa0b885",
+      "sourceReference": "15",
+      "name": "금정산",
+      "administrativeCode": "48330310",
+      "longitude": 129.05059247484635,
+      "latitude": 35.28014944047451
+    },
+    {
+      "id": "hkr_mtn_61ef2c2e719e99a5579cc3affd650c79",
+      "sourceReference": "16",
+      "name": "깃대봉",
+      "administrativeCode": "46910360",
+      "longitude": 125.2041972254349,
+      "latitude": 34.69710035090212
+    },
+    {
+      "id": "hkr_mtn_e7827bf51b55845f06b321b70ec3ef72",
+      "sourceReference": "17",
+      "name": "남산",
+      "administrativeCode": "47130122",
+      "longitude": 129.2642874377414,
+      "latitude": 35.837884124064246
+    },
+    {
+      "id": "hkr_mtn_b65d4772cdccf15a563bcabfb5f46985",
+      "sourceReference": "18",
+      "name": "내연산",
+      "administrativeCode": "47770320",
+      "longitude": 129.28940254044704,
+      "latitude": 36.27889397627143
+    },
+    {
+      "id": "hkr_mtn_d27bc996fa8087ea5c92a254670dbe05",
+      "sourceReference": "19",
+      "name": "내장산",
+      "administrativeCode": "52770370",
+      "longitude": 126.88918533667216,
+      "latitude": 35.47821546869033
+    },
+    {
+      "id": "hkr_mtn_a2d174a7c909e16051f0e90cd1c42c6e",
+      "sourceReference": "20",
+      "name": "대둔산",
+      "administrativeCode": "52710380",
+      "longitude": 127.31933647280165,
+      "latitude": 36.12339720130973
+    },
+    {
+      "id": "hkr_mtn_467038e42ccccaa8a8749eacf86ea65d",
+      "sourceReference": "21",
+      "name": "대암산",
+      "administrativeCode": "51800340",
+      "longitude": 128.1347564636625,
+      "latitude": 38.21098325327265
+    },
+    {
+      "id": "hkr_mtn_68cafcb3f909b168a981278cbcdb03e6",
+      "sourceReference": "22",
+      "name": "대야산",
+      "administrativeCode": "43760360",
+      "longitude": 127.92941350323179,
+      "latitude": 36.668959232362816
+    },
+    {
+      "id": "hkr_mtn_ecba1f30d4a4fe662942319e183978a8",
+      "sourceReference": "23",
+      "name": "덕숭산",
+      "administrativeCode": "44810360",
+      "longitude": 126.6239976719586,
+      "latitude": 36.67146631500432
+    },
+    {
+      "id": "hkr_mtn_d41f2b8c00f486169cf95acbbc16694c",
+      "sourceReference": "24",
+      "name": "덕유산",
+      "administrativeCode": "52730340",
+      "longitude": 127.74632944441571,
+      "latitude": 35.859465253375994
+    },
+    {
+      "id": "hkr_mtn_61b836d0d388e1cab93898d9b90d0da6",
+      "sourceReference": "25",
+      "name": "덕항산",
+      "administrativeCode": "51190116",
+      "longitude": 129.0125027400112,
+      "latitude": 37.308715480714135
+    },
+    {
+      "id": "hkr_mtn_87f3f9d80feec9521a6cdc71fc574167",
+      "sourceReference": "26",
+      "name": "도락산",
+      "administrativeCode": "43800360",
+      "longitude": 128.31107007734002,
+      "latitude": 36.856387997619514
+    },
+    {
+      "id": "hkr_mtn_b53c0c8c8d7c475edd90d140f8789781",
+      "sourceReference": "27",
+      "name": "도봉산",
+      "administrativeCode": "41630340",
+      "longitude": 127.01049726986854,
+      "latitude": 37.69685605397304
+    },
+    {
+      "id": "hkr_mtn_307181fa92ce7939bf38e6685599e0f9",
+      "sourceReference": "28",
+      "name": "두륜산",
+      "administrativeCode": "46820310",
+      "longitude": 126.63654649275178,
+      "latitude": 34.47319857965158
+    },
+    {
+      "id": "hkr_mtn_d9bf5bdf1da4dd26b83837c937c67469",
+      "sourceReference": "29",
+      "name": "두타산",
+      "administrativeCode": "51170124",
+      "longitude": 129.00469941928804,
+      "latitude": 37.426410080876884
+    },
+    {
+      "id": "hkr_mtn_eafbcea454652ac2c81fa37aabe99746",
+      "sourceReference": "30",
+      "name": "마니산",
+      "administrativeCode": "28710340",
+      "longitude": 126.43464112862752,
+      "latitude": 37.61262921995971
+    },
+    {
+      "id": "hkr_mtn_7abbf7c922d6912df98032066eaee63b",
+      "sourceReference": "31",
+      "name": "마이산",
+      "administrativeCode": "52720250",
+      "longitude": 127.41622089184547,
+      "latitude": 35.76108700217146
+    },
+    {
+      "id": "hkr_mtn_f5796f196ee35e8b05915644e038176a",
+      "sourceReference": "32",
+      "name": "명성산",
+      "administrativeCode": "51780256",
+      "longitude": 127.33800199362106,
+      "latitude": 38.104281641601695
+    },
+    {
+      "id": "hkr_mtn_4cde4ea4f18bff6d3b8f49b9a08ac2fd",
+      "sourceReference": "33",
+      "name": "명지산",
+      "administrativeCode": "41820350",
+      "longitude": 127.4321316473777,
+      "latitude": 37.9413828305185
+    },
+    {
+      "id": "hkr_mtn_11d4b9d57b2313f1124b743055fddc45",
+      "sourceReference": "34",
+      "name": "모악산",
+      "administrativeCode": "52210450",
+      "longitude": 127.0851022537287,
+      "latitude": 35.72807721629832
+    },
+    {
+      "id": "hkr_mtn_d6c12829427bcd9e1c2171943c794e5e",
+      "sourceReference": "35",
+      "name": "무등산",
+      "administrativeCode": "29170120",
+      "longitude": 127.00888909751026,
+      "latitude": 35.12433829255849
+    },
+    {
+      "id": "hkr_mtn_d21bdddcc87c87d1ef6d699fb009c7bb",
+      "sourceReference": "36",
+      "name": "무학산",
+      "administrativeCode": "48160162",
+      "longitude": 128.53553010284992,
+      "latitude": 35.21005054348861
+    },
+    {
+      "id": "hkr_mtn_44932d6b12bd74476cf6d4e51baeaf70",
+      "sourceReference": "37",
+      "name": "미륵산",
+      "administrativeCode": "48220310",
+      "longitude": 128.4161486889363,
+      "latitude": 34.810421993097926
+    },
+    {
+      "id": "hkr_mtn_55d3a6abbed6fe2be00aeba1c0bef490",
+      "sourceReference": "38",
+      "name": "민주지산",
+      "administrativeCode": "44710330",
+      "longitude": 127.84910995389951,
+      "latitude": 36.03939912086595
+    },
+    {
+      "id": "hkr_mtn_0d72cdcf67b4ba0f681bb6c6edffb75f",
+      "sourceReference": "39",
+      "name": "방장산",
+      "administrativeCode": "52790420",
+      "longitude": 126.75431913709683,
+      "latitude": 35.45558793950607
+    },
+    {
+      "id": "hkr_mtn_d23084e1f9cbfa154bd34c41842fa35a",
+      "sourceReference": "40",
+      "name": "방태산",
+      "administrativeCode": "51810350",
+      "longitude": 128.3899994910209,
+      "latitude": 37.88829194564411
+    },
+    {
+      "id": "hkr_mtn_32fce0a4757cfb9da40c1079719b4f06",
+      "sourceReference": "41",
+      "name": "백덕산",
+      "administrativeCode": "51750370",
+      "longitude": 128.293623777259,
+      "latitude": 37.39653958486247
+    },
+    {
+      "id": "hkr_mtn_8c201dec1c6e05a52b5ceaa3ef4477c4",
+      "sourceReference": "42",
+      "name": "백암산",
+      "administrativeCode": "46880400",
+      "longitude": 126.86877382045505,
+      "latitude": 35.46068701498783
+    },
+    {
+      "id": "hkr_mtn_2c3d7f44f8118103e33e487c9895f0bf",
+      "sourceReference": "43",
+      "name": "백운산(포천)",
+      "administrativeCode": "41650380",
+      "longitude": 127.44429505225361,
+      "latitude": 38.07489438460528
+    },
+    {
+      "id": "hkr_mtn_e2405b1c8ed8c0b4f5c764d25141ac2a",
+      "sourceReference": "44",
+      "name": "백운산(광양)",
+      "administrativeCode": "46230360",
+      "longitude": 127.62111722315666,
+      "latitude": 35.10621962858158
+    },
+    {
+      "id": "hkr_mtn_dca3857b60e74232d7b3ba35115df4a2",
+      "sourceReference": "45",
+      "name": "백운산(정선)",
+      "administrativeCode": "51760310",
+      "longitude": 128.59614465873452,
+      "latitude": 37.280101808124144
+    },
+    {
+      "id": "hkr_mtn_03f343fae9427a772cc169f1fb3c0dd2",
+      "sourceReference": "46",
+      "name": "변산",
+      "administrativeCode": "52800390",
+      "longitude": 126.62175137020569,
+      "latitude": 35.63558821581596
+    },
+    {
+      "id": "hkr_mtn_2f90a6878506b434891af6242acd8587",
+      "sourceReference": "47",
+      "name": "북한산",
+      "administrativeCode": "41281107",
+      "longitude": 126.97798955973327,
+      "latitude": 37.65865196385229
+    },
+    {
+      "id": "hkr_mtn_6895a251ca9f54d39f0c8426bbe1cd8d",
+      "sourceReference": "48",
+      "name": "비슬산",
+      "administrativeCode": "27710370",
+      "longitude": 128.5242597758807,
+      "latitude": 35.715609656161924
+    },
+    {
+      "id": "hkr_mtn_a020240707c3e29409ca036fd4e867be",
+      "sourceReference": "49",
+      "name": "삼악산",
+      "administrativeCode": "51110350",
+      "longitude": 127.6605255183255,
+      "latitude": 37.83980833310385
+    },
+    {
+      "id": "hkr_mtn_f0cc07def5a52b362bec67e001be3849",
+      "sourceReference": "50",
+      "name": "서대산",
+      "administrativeCode": "44710390",
+      "longitude": 127.53834143079297,
+      "latitude": 36.22072450039832
+    },
+    {
+      "id": "hkr_mtn_81c00948303956822989fe2476634e70",
+      "sourceReference": "51",
+      "name": "선운산",
+      "administrativeCode": "52790360",
+      "longitude": 126.51066314051188,
+      "latitude": 35.48068599888301
+    },
+    {
+      "id": "hkr_mtn_6706f2033456c933babd9a5a79bde261",
+      "sourceReference": "52",
+      "name": "설악산",
+      "administrativeCode": "51830310",
+      "longitude": 128.46517898891236,
+      "latitude": 38.11899026065849
+    },
+    {
+      "id": "hkr_mtn_d3b97b24a362b490d3d5fdc665bad1e5",
+      "sourceReference": "53",
+      "name": "성인봉",
+      "administrativeCode": "47940310",
+      "longitude": 130.8660924095902,
+      "latitude": 37.50076497946336
+    },
+    {
+      "id": "hkr_mtn_8b369a7a102199730ca6cd8050c9b4d9",
+      "sourceReference": "54",
+      "name": "소백산",
+      "administrativeCode": "43800320",
+      "longitude": 128.48436016929253,
+      "latitude": 36.95736633859657
+    },
+    {
+      "id": "hkr_mtn_6312847e5aac0787a625bc0a609a9f78",
+      "sourceReference": "55",
+      "name": "소요산",
+      "administrativeCode": "41250110",
+      "longitude": 127.0870388025759,
+      "latitude": 37.93718096749114
+    },
+    {
+      "id": "hkr_mtn_2d4a0c039a34453aaa6d1a5cf527eaeb",
+      "sourceReference": "56",
+      "name": "속리산",
+      "administrativeCode": "43720310",
+      "longitude": 127.87045000709163,
+      "latitude": 36.542746994942526
+    },
+    {
+      "id": "hkr_mtn_61e9d6b555ad0cb31d3789ea8bba22ee",
+      "sourceReference": "57",
+      "name": "신불산",
+      "administrativeCode": "31710380",
+      "longitude": 129.05253866344077,
+      "latitude": 35.539734212528536
+    },
+    {
+      "id": "hkr_mtn_8c74de3c828060ec4e2a4c2a023ededa",
+      "sourceReference": "58",
+      "name": "연화산",
+      "administrativeCode": "48820380",
+      "longitude": 128.26497245309878,
+      "latitude": 35.070960681186584
+    },
+    {
+      "id": "hkr_mtn_82f687a122301e6e14add056b43c8026",
+      "sourceReference": "59",
+      "name": "오대산",
+      "administrativeCode": "51720390",
+      "longitude": 128.54305009751008,
+      "latitude": 37.794123883854816
+    },
+    {
+      "id": "hkr_mtn_42d2f99ed96fed82b9ab66dd49ad5d1a",
+      "sourceReference": "60",
+      "name": "오봉산",
+      "administrativeCode": "51790310",
+      "longitude": 127.80407346087847,
+      "latitude": 38.000576831001084
+    },
+    {
+      "id": "hkr_mtn_5529324c66baa32f1917d530fe5f3f78",
+      "sourceReference": "61",
+      "name": "용문산",
+      "administrativeCode": "41830400",
+      "longitude": 127.54567205710165,
+      "latitude": 37.56112825239998
+    },
+    {
+      "id": "hkr_mtn_b1819d12c9009ba804c02cc35881d35b",
+      "sourceReference": "62",
+      "name": "용화산",
+      "administrativeCode": "51790320",
+      "longitude": 127.74730014229952,
+      "latitude": 38.038245432720586
+    },
+    {
+      "id": "hkr_mtn_c827a95a70da6c57731e0f62813a2566",
+      "sourceReference": "63",
+      "name": "운문산",
+      "administrativeCode": "48270340",
+      "longitude": 128.95953352409637,
+      "latitude": 35.615687610054614
+    },
+    {
+      "id": "hkr_mtn_58a801722b33b75b9239565fb72b0e95",
+      "sourceReference": "64",
+      "name": "운악산",
+      "administrativeCode": "41650410",
+      "longitude": 127.3252114447544,
+      "latitude": 37.876811895238156
+    },
+    {
+      "id": "hkr_mtn_7b31006b93233bb96afa738c24ccbbde",
+      "sourceReference": "65",
+      "name": "운장산",
+      "administrativeCode": "52710400",
+      "longitude": 127.35760521260686,
+      "latitude": 35.91138977084595
+    },
+    {
+      "id": "hkr_mtn_047e20f4449ff877485fb723dd235551",
+      "sourceReference": "66",
+      "name": "월악산",
+      "administrativeCode": "43150350",
+      "longitude": 128.10564332219786,
+      "latitude": 36.88578398562699
+    },
+    {
+      "id": "hkr_mtn_f892f4699657d7a0d4e95f07b30a01d0",
+      "sourceReference": "67",
+      "name": "월출산",
+      "administrativeCode": "46830250",
+      "longitude": 126.704044069884,
+      "latitude": 34.766549900130386
+    },
+    {
+      "id": "hkr_mtn_e7a6e7287a1e76852af412fc3493c3ad",
+      "sourceReference": "68",
+      "name": "유명산",
+      "administrativeCode": "41820310",
+      "longitude": 127.48681082018597,
+      "latitude": 37.57539302005745
+    },
+    {
+      "id": "hkr_mtn_b65c8b2d458692ad9c38abba3ee78f83",
+      "sourceReference": "69",
+      "name": "응봉산",
+      "administrativeCode": "51230350",
+      "longitude": 129.23020904251717,
+      "latitude": 37.07654261890169
+    },
+    {
+      "id": "hkr_mtn_a16f021472ce944d84ca6a54b2cfcfbc",
+      "sourceReference": "70",
+      "name": "장안산",
+      "administrativeCode": "52740250",
+      "longitude": 127.59481089872884,
+      "latitude": 35.62916277680897
+    },
+    {
+      "id": "hkr_mtn_a57ecd44a11598ca162402185b54174a",
+      "sourceReference": "71",
+      "name": "재약산",
+      "administrativeCode": "48270340",
+      "longitude": 128.97090452281088,
+      "latitude": 35.56087044478546
+    },
+    {
+      "id": "hkr_mtn_122937c54d419b1b76f8a466d09e5da9",
+      "sourceReference": "72",
+      "name": "적상산",
+      "administrativeCode": "52730330",
+      "longitude": 127.6895218318701,
+      "latitude": 35.946354569016094
+    },
+    {
+      "id": "hkr_mtn_3f78c08223a946d9b61e9395b790b9cb",
+      "sourceReference": "73",
+      "name": "점봉산",
+      "administrativeCode": "51810250",
+      "longitude": 128.42541735953756,
+      "latitude": 38.0487375636512
+    },
+    {
+      "id": "hkr_mtn_cafdf3628b0ef8b33775041c8364052e",
+      "sourceReference": "74",
+      "name": "조계산",
+      "administrativeCode": "46150250",
+      "longitude": 127.31348735665397,
+      "latitude": 35.00118198113052
+    },
+    {
+      "id": "hkr_mtn_6f389a8843894615d3b5d7a4b2a24511",
+      "sourceReference": "75",
+      "name": "주왕산",
+      "administrativeCode": "47750310",
+      "longitude": 129.16274449475034,
+      "latitude": 36.389524560656554
+    },
+    {
+      "id": "hkr_mtn_6c4d0d889c13af5aa41721b9f18224f8",
+      "sourceReference": "76",
+      "name": "주흘산",
+      "administrativeCode": "47280250",
+      "longitude": 128.10093682404164,
+      "latitude": 36.788258675144974
+    },
+    {
+      "id": "hkr_mtn_ddbf15deb04eef64dd8c105fff18bcaa",
+      "sourceReference": "77",
+      "name": "지리산",
+      "administrativeCode": "48870310",
+      "longitude": 127.73059999391921,
+      "latitude": 35.33707470452731
+    },
+    {
+      "id": "hkr_mtn_cb9a6f374b2315c06ffc069ffe73eea1",
+      "sourceReference": "78",
+      "name": "지리산(통영)",
+      "administrativeCode": "48220370",
+      "longitude": 128.18531670839693,
+      "latitude": 34.84602643378837
+    },
+    {
+      "id": "hkr_mtn_a4efb1bad2d347a5140919900f282760",
+      "sourceReference": "79",
+      "name": "천관산",
+      "administrativeCode": "46800256",
+      "longitude": 126.91846615035152,
+      "latitude": 34.531600197989285
+    },
+    {
+      "id": "hkr_mtn_3ba23007eae8c2f8581eff5eb37cf002",
+      "sourceReference": "80",
+      "name": "천마산",
+      "administrativeCode": "41360262",
+      "longitude": 127.27266540725893,
+      "latitude": 37.67997726649663
+    },
+    {
+      "id": "hkr_mtn_74c67615484dba30d6e382c0a6efcd6c",
+      "sourceReference": "81",
+      "name": "천성산",
+      "administrativeCode": "48330320",
+      "longitude": 128.98524580118226,
+      "latitude": 35.33098135340177
+    },
+    {
+      "id": "hkr_mtn_0beabeda8b5c111c50796a28642c057a",
+      "sourceReference": "82",
+      "name": "천태산",
+      "administrativeCode": "44710320",
+      "longitude": 127.59994438024236,
+      "latitude": 36.159212834870246
+    },
+    {
+      "id": "hkr_mtn_afdbd43fe716de90059ca2346c5a3613",
+      "sourceReference": "83",
+      "name": "청량산",
+      "administrativeCode": "47920370",
+      "longitude": 128.90878012154636,
+      "latitude": 36.79433615880945
+    },
+    {
+      "id": "hkr_mtn_3d0d4477decb6f20b5b91b7288632208",
+      "sourceReference": "84",
+      "name": "추월산",
+      "administrativeCode": "52770370",
+      "longitude": 126.97630281536931,
+      "latitude": 35.40006876240208
+    },
+    {
+      "id": "hkr_mtn_be03b0453dabacb436dd30479f4da72f",
+      "sourceReference": "85",
+      "name": "축령산",
+      "administrativeCode": "41360340",
+      "longitude": 127.33394953259705,
+      "latitude": 37.75262785334082
+    },
+    {
+      "id": "hkr_mtn_bcc590a68c3ddb62c6cf09669a570fbc",
+      "sourceReference": "86",
+      "name": "치악산",
+      "administrativeCode": "51130310",
+      "longitude": 128.05541649631095,
+      "latitude": 37.36510470118747
+    },
+    {
+      "id": "hkr_mtn_90a55b037c7189a1c7daa672b51f1180",
+      "sourceReference": "87",
+      "name": "칠갑산",
+      "administrativeCode": "44790320",
+      "longitude": 126.88479158788185,
+      "latitude": 36.41286024381054
+    },
+    {
+      "id": "hkr_mtn_e5e4eb4fcdc7be4f10692d706ebfaead",
+      "sourceReference": "88",
+      "name": "태백산",
+      "administrativeCode": "51190108",
+      "longitude": 128.91608680273694,
+      "latitude": 37.09844845537253
+    },
+    {
+      "id": "hkr_mtn_711f764943dd4a7744660bfecc9cc6db",
+      "sourceReference": "89",
+      "name": "태화산",
+      "administrativeCode": "51750250",
+      "longitude": 128.48520141129697,
+      "latitude": 37.11747791286583
+    },
+    {
+      "id": "hkr_mtn_65e389e11c6bd3f2841fac70f2e6e40b",
+      "sourceReference": "90",
+      "name": "팔공산",
+      "administrativeCode": "27140134",
+      "longitude": 128.69455391714524,
+      "latitude": 36.016289713617546
+    },
+    {
+      "id": "hkr_mtn_249e20b0c61c55d3f2fb75edf4ba6194",
+      "sourceReference": "91",
+      "name": "팔봉산",
+      "administrativeCode": "51720370",
+      "longitude": 127.69656438122176,
+      "latitude": 37.695948814016496
+    },
+    {
+      "id": "hkr_mtn_2499d08b7bf6c09c85c2153a65663ebd",
+      "sourceReference": "92",
+      "name": "팔영산",
+      "administrativeCode": "46770440",
+      "longitude": 127.43576965245815,
+      "latitude": 34.6173734884292
+    },
+    {
+      "id": "hkr_mtn_08c6fa772175c930011785b4720e3c94",
+      "sourceReference": "93",
+      "name": "한라산",
+      "administrativeCode": "50130122",
+      "longitude": 126.52998077414654,
+      "latitude": 33.361280986044065
+    },
+    {
+      "id": "hkr_mtn_d1e3593e5f7045e309e0b2b4f34a606a",
+      "sourceReference": "94",
+      "name": "화악산",
+      "administrativeCode": "41820350",
+      "longitude": 127.50376118673293,
+      "latitude": 37.99527089423437
+    },
+    {
+      "id": "hkr_mtn_95b50f45bd585888e58dd5591c11919b",
+      "sourceReference": "95",
+      "name": "화왕산",
+      "administrativeCode": "48740250",
+      "longitude": 128.53252787704685,
+      "latitude": 35.5467662325532
+    },
+    {
+      "id": "hkr_mtn_de53709ae72c43f1d803c0ba9f52c657",
+      "sourceReference": "96",
+      "name": "황매산",
+      "administrativeCode": "48860310",
+      "longitude": 127.9743899883358,
+      "latitude": 35.495088517673075
+    },
+    {
+      "id": "hkr_mtn_65a939c9aaf9500479e00974050025ef",
+      "sourceReference": "97",
+      "name": "황석산",
+      "administrativeCode": "48870360",
+      "longitude": 127.75542766325432,
+      "latitude": 35.65518838608592
+    },
+    {
+      "id": "hkr_mtn_19e07d72db0d43272496eb737a1546ee",
+      "sourceReference": "98",
+      "name": "황악산",
+      "administrativeCode": "43740340",
+      "longitude": 127.96626085624492,
+      "latitude": 36.118295162863596
+    },
+    {
+      "id": "hkr_mtn_9e70a7dad415f47cac7d6de09769fc8c",
+      "sourceReference": "99",
+      "name": "황장산",
+      "administrativeCode": "47280350",
+      "longitude": 128.27795653758503,
+      "latitude": 36.81252371141853
+    },
+    {
+      "id": "hkr_mtn_714454c456205b1077fb2048217c8420",
+      "sourceReference": "100",
+      "name": "희양산",
+      "administrativeCode": "43760330",
+      "longitude": 128.00461365013567,
+      "latitude": 36.71476280359516
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+# Xcode and SwiftPM build products
+DerivedData/
+.build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+
+# CI workspaces and generated evidence. Keep checked-in source fixtures under
+# Docs/evidence/ tracked.
+.ci/
+Evidence/runtime/
+Evidence/tests/
+Evidence/manifests/
+.gjc/
+
+# Local Supabase CLI state. Configuration, migrations, and deterministic seeds
+# remain tracked.
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.*
+# Python bytecode caches.
+__pycache__/
+*.py[cod]
+
+# Local secrets and signing material.
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p8
+*.p12
+*.mobileprovision
+
+# Operating-system metadata.
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+Thumbs.db
+Desktop.ini
+__MACOSX/
