@@ -123,12 +123,22 @@ python3 "$script_dir/verify-xctest-manifest.py" \
   --source-root "$repo_root" || die 'xctest manifest verification failed'
 python3 - "$manifest_path" "$derived_data_path" "$xctestrun_path" <<'PY' || die 'manifest does not describe the requested xctestrun'
 import json
+import hashlib
+import os
+import stat
 import sys
 from pathlib import Path, PurePosixPath
 
 manifest_path = Path(sys.argv[1])
 derived_data = Path(sys.argv[2]).resolve()
 requested = Path(sys.argv[3]).resolve()
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.digest()
+
 try:
     document = json.loads(manifest_path.read_text(encoding="utf-8"))
     relative = document["inputs"]["xctestrun"]
@@ -140,7 +150,15 @@ try:
     expected = derived_data.joinpath(*path.parts).resolve(strict=True)
     expected.relative_to(derived_data)
     if expected != requested:
-        raise ValueError
+        expected_status = os.lstat(expected)
+        requested_status = os.lstat(requested)
+        if (
+            not stat.S_ISREG(expected_status.st_mode)
+            or not stat.S_ISREG(requested_status.st_mode)
+            or stat.S_IMODE(expected_status.st_mode) != stat.S_IMODE(requested_status.st_mode)
+            or sha256_file(expected) != sha256_file(requested)
+        ):
+            raise ValueError
 except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
     raise SystemExit(1)
 PY
