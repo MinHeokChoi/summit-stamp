@@ -19,18 +19,11 @@ final class MapFlowTests: XCTestCase {
             "The locally persisted passport must load before mutations are available."
         )
 
-        let addPlanButtons = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "passport.plan.add.")
-        )
-        let addPlanButton = addPlanButtons.firstMatch
+        let mountainID = "hkr_mtn_03f343fae9427a772cc169f1fb3c0dd2"
+        let addPlanButton = app.buttons["passport.plan.add.\(mountainID)"]
         XCTAssertTrue(
             addPlanButton.waitForExistence(timeout: launchTimeout),
-            "The first available unvisited mountain must offer a plan control."
-        )
-
-        let mountainID = try XCTUnwrap(
-            addPlanButton.identifier.removingPrefix("passport.plan.add."),
-            "The selected plan control must expose its mountain ID."
+            "The release-bound sample mountain must offer a plan control."
         )
         addPlanButton.tap()
         let removePlanButton = app.buttons["passport.plan.remove.\(mountainID)"]
