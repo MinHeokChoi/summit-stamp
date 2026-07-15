@@ -180,18 +180,27 @@ final class MapFlowTests: XCTestCase {
             ).count,
             5
         )
-        XCTAssertEqual(
-            app.staticTexts["map.summary.visited-status"].label,
-            "Visited status: \(visitedStatus)"
+        assertLabel(
+            "Visited status: \(visitedStatus)",
+            for: app.staticTexts["map.summary.visited-status"]
         )
-        XCTAssertEqual(
-            app.staticTexts["map.summary.visit-count"].label,
-            "Visit count: \(visitCount)"
+        assertLabel(
+            "Visit count: \(visitCount)",
+            for: app.staticTexts["map.summary.visit-count"]
         )
-        XCTAssertEqual(
-            app.staticTexts["map.summary.planned-status"].label,
-            "Planned status: \(plannedStatus)"
+        assertLabel(
+            "Planned status: \(plannedStatus)",
+            for: app.staticTexts["map.summary.planned-status"]
         )
+    }
+
+    private func assertLabel(_ expectedLabel: String, for element: XCUIElement) {
+        let labelExpectation = expectation(
+            for: NSPredicate(format: "label == %@", expectedLabel),
+            evaluatedWith: element,
+            handler: nil
+        )
+        wait(for: [labelExpectation], timeout: launchTimeout)
     }
     private func pendingMutationCount(from label: String) throws -> Int {
         let value = label.split(separator: " ", maxSplits: 1).first
