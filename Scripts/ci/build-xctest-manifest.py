@@ -18,7 +18,7 @@ SCHEMA_VERSION = 1
 SOURCE_DIRECTORIES = ("App", "Config", "Features", "Packages", "Tests")
 LOCKFILE_NAMES = {"Package.resolved", "Podfile.lock", "Cartfile.resolved"}
 EXCLUDED_TOP_LEVEL = {".git", ".gjc", ".ci", "Evidence", "Pods", "Carthage"}
-PROVENANCE_EXCLUDED_DIRECTORIES = {".build", ".cache", "DerivedData", "cache", "Caches"}
+PROVENANCE_EXCLUDED_DIRECTORIES = {".build", ".cache", ".swiftpm", "DerivedData", "cache", "Caches"}
 REFERENCE_KEYS = {"TestBundlePath", "TestHostPath", "UITargetAppPath", "DependentProductPaths"}
 BUNDLE_SUFFIXES = (".xctest", ".app", ".framework", ".appex", ".bundle")
 
