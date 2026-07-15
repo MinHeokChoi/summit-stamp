@@ -226,7 +226,7 @@ def write_archive(temporary_path: Path, entries: list[TreeEntry]) -> None:
             with tarfile.open(
                 fileobj=output,
                 mode="w",
-                format=tarfile.PAX_FORMAT,
+                format=tarfile.GNU_FORMAT,
                 dereference=False,
             ) as archive:
                 for entry in entries:

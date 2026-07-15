@@ -201,7 +201,10 @@ def validate_member_name(name: str) -> PurePosixPath:
 
 
 def record_for_member(member: tarfile.TarInfo) -> MemberRecord:
-    relative = validate_member_name(member.name)
+    member_name = member.name
+    if member.type == tarfile.DIRTYPE and member_name.endswith("/") and not member_name.endswith("//"):
+        member_name = member_name[:-1]
+    relative = validate_member_name(member_name)
     if member.type == tarfile.DIRTYPE:
         is_directory = True
         if member.size != 0:
@@ -215,9 +218,9 @@ def record_for_member(member: tarfile.TarInfo) -> MemberRecord:
     if getattr(member, "sparse", None):
         fail(f"archive contains a sparse member: {member.name}")
     if member.pax_headers and set(member.pax_headers) != {"path"}:
-        fail(f"archive contains unsupported extended metadata: {member.name}")
-    if member.pax_headers and member.pax_headers.get("path") != member.name:
-        fail(f"archive contains inconsistent extended metadata: {member.name}")
+        fail(f"archive contains unsupported extended metadata: {member_name}")
+    if member.pax_headers and member.pax_headers.get("path") not in {member.name, member_name}:
+        fail(f"archive contains inconsistent extended metadata: {member_name}")
     if (
         member.uid != 0
         or member.gid != 0
@@ -228,13 +231,13 @@ def record_for_member(member: tarfile.TarInfo) -> MemberRecord:
         or member.mode < 0
         or member.mode & ~0o7777
     ):
-        fail(f"archive member has invalid metadata: {member.name}")
+        fail(f"archive member has invalid metadata: {member_name}")
     if not is_directory:
         if not isinstance(member.size, int) or member.size < 0 or member.size > MAX_MEMBER_SIZE:
-            fail(f"archive member has an invalid size: {member.name}")
+            fail(f"archive member has an invalid size: {member_name}")
     if relative.parts == (PAYLOAD_ROOT,) and not is_directory:
         fail("payload root must be a directory")
-    return MemberRecord(member.name, is_directory, member.mode, member.size)
+    return MemberRecord(member_name, is_directory, member.mode, member.size)
 
 
 def validate_archive(archive_file: BinaryIO) -> list[MemberRecord]:
