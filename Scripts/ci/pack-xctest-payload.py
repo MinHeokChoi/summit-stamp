@@ -177,6 +177,7 @@ def collect_tree(source: Path) -> list[TreeEntry]:
                 walk(entry.path, archive_name)
 
     walk(source, PAYLOAD_ROOT)
+    entries.sort(key=lambda entry: entry.archive_name)
     return entries
 
 
