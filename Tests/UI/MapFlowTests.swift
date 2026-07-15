@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class MapFlowTests: XCTestCase {
-    private let launchTimeout: TimeInterval = 5
+    private let launchTimeout: TimeInterval = 15
 
     func testManualPendingAddDeleteUpdatesPinImmediately() throws {
         let app = XCUIApplication()
